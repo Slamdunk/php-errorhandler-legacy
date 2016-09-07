@@ -52,7 +52,7 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testHandleCliException()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, true, false, false);
+        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
         $errorHandler->setAutoExit(false);
         $errorHandler->setCli(true);
         $errorHandler->setTerminalWidth(50);
@@ -100,7 +100,7 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testHandleWebExceptionInProduzione()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, true, false, false);
+        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
         $errorHandler->setAutoExit(false);
         $errorHandler->setCli(false);
 
@@ -123,7 +123,7 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(0, filesize($this->errorLog));
 
-        $errorHandler = new ErrorHandler($this->mailCallback, true, false, false);
+        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
 
         $error = uniqid();
         $exception = new ErrorException(uniqid(), E_USER_ERROR, E_ERROR, __FILE__, 1, $this->exception);
@@ -174,7 +174,7 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testErroriNellInvioDellaMailVengonoComunqueLoggati()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, true, false, true);
+        $errorHandler = new ErrorHandler($this->mailCallback, false, true, true);
 
         $subject = uniqid();
         $bodyText = uniqid();

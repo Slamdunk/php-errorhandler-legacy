@@ -36,7 +36,7 @@ final class ErrorHandler
         E_USER_DEPRECATED       => 'E_USER_DEPRECATED',
     );
 
-    public function __construct(callable $emailCallback, bool $logErrors = true, bool $displayExceptions = false, bool $emailErrors = true, string $exceptionTemplate = null)
+    public function __construct(callable $emailCallback, bool $displayExceptions = false, bool $logErrors = true, bool $emailErrors = true, string $exceptionTemplate = null)
     {
         $this->emailCallback = $emailCallback;
         $this->logErrors = $logErrors;
