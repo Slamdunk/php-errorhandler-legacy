@@ -1,0 +1,26 @@
+{
+    "name": "slam/php-errorhandler-legacy",
+    "type": "library",
+    "description": "Crappy class to manage errors and exceptions",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Filippo Tessarotto",
+            "email": "zoeslam@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Slam\\ErrorHandler\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SlamTest\\ErrorHandler\\": "tests/"
+        }
+    },
+    "require" : {
+        "php" : "^7.0"
+    }
+}

@@ -1,0 +1,41 @@
+<?php
+
+use Slam\ErrorHandler\ErrorHandler;
+
+if (! $ajax) {
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>500: Errore interno</title>
+</head>
+<body>
+<?php
+}
+?>
+<h1>500: Errore interno</h1>
+<?php
+
+if ($displayExceptions) {
+    $currentEx = $exception;
+    do {
+        ?>
+        <span style="text-align: left; background-color: #fcc; border: 1px solid #600; color: #600; display: block; margin: 1em 0; padding: .33em 6px">
+            <b>Message:</b> <?php echo htmlspecialchars($currentEx->getMessage());?><br />
+            <br />
+            <b>Class:</b> <?php echo get_class($currentEx);?><br />
+            <b>Code:</b> <?php echo ErrorHandler::getExceptionCode($currentEx);?><br />
+            <b>File:</b> <?php echo $currentEx->getFile();?>:<?php echo $currentEx->getLine();?><br />
+            <b>Stack trace:</b><pre><?php echo htmlspecialchars(ErrorHandler::purgeTrace($currentEx->getTraceAsString()));?></pre>
+        </span>
+        <?php
+    } while ($currentEx = $currentEx->getPrevious());
+}
+
+if (! $ajax) {
+?>
+</body>
+</html>
+<?php
+}
+?>
