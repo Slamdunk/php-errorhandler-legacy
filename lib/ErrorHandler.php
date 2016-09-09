@@ -12,6 +12,7 @@ final class ErrorHandler
     private $cli;
     private $terminalWidth;
     private $hasColorSupport;
+    private $errorOutputStream;
 
     private $emailCallback;
     private $exceptionTemplate;
@@ -91,6 +92,20 @@ final class ErrorHandler
         if (preg_match("{rows.(\d+);.columns.(\d+);}i", exec('stty -a | grep columns'), $match)) {
             return $match[2];
         }
+    }
+
+    public function setErrorOutputStream($errorOutputStream)
+    {
+        $this->errorOutputStream = $errorOutputStream;
+    }
+
+    public function getErrorOutputStream()
+    {
+        if ($this->errorOutputStream === null) {
+            $this->setErrorOutputStream(STDERR);
+        }
+
+        return $this->errorOutputStream;
     }
 
     public function register()
@@ -188,7 +203,7 @@ final class ErrorHandler
 
     private function outputError($text)
     {
-        echo str_replace(array_keys(self::$colors), $this->hasColorSupport() ? array_values(self::$colors) : '', $text) . PHP_EOL;
+        fwrite($this->getErrorOutputStream(), str_replace(array_keys(self::$colors), $this->hasColorSupport() ? array_values(self::$colors) : '', $text) . PHP_EOL);
     }
 
     private function hasColorSupport()

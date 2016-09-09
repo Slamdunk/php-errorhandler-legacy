@@ -10,7 +10,6 @@ use Slam\ErrorHandler\ErrorHandler;
 final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 {
     private $backupErrorLog;
-
     private $errorLog;
 
     protected function setUp()
@@ -57,11 +56,32 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $errorHandler->setCli(true);
         $errorHandler->setTerminalWidth(50);
 
-        ob_start();
-        $errorHandler->exceptionHandler($this->exception);
-        $output = ob_get_clean();
+        $this->assertSame(STDERR, $errorHandler->getErrorOutputStream());
 
+        $memoryStream = fopen('php://memory', 'r+');
+        $errorHandler->setErrorOutputStream($memoryStream);
+
+        $errorHandler->exceptionHandler($this->exception);
+
+        fseek($memoryStream, 0);
+        $output = stream_get_contents($memoryStream);
         $this->assertContains($this->exception->getMessage(), $output);
+    }
+
+    public function testErroreNellaCliVieneComunqueLoggata()
+    {
+        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
+        $errorHandler->setAutoExit(false);
+        $errorHandler->setCli(true);
+        $errorHandler->setTerminalWidth(50);
+
+        $fakeStream = uniqid('fake_stream_');
+        $errorHandler->setErrorOutputStream($fakeStream);
+
+        $errorHandler->exceptionHandler($this->exception);
+
+        $errorLogContent = file_get_contents($this->errorLog);
+        $this->assertContains('to be resource, string given', $errorLogContent);
     }
 
     public function testHandleWebExceptionInSviluppo()
