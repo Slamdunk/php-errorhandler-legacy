@@ -89,7 +89,7 @@ final class ErrorHandler
             return preg_replace('{^(\d+)x.*$}', '$1', $ansicon);
         }
 
-        if (preg_match("{rows.(\d+);.columns.(\d+);}i", exec('stty -a | grep columns'), $match)) {
+        if (preg_match("{rows.(\d+);.columns.(\d+);}i", exec('stty -a 2> /dev/null | grep columns'), $match)) {
             return $match[2];
         }
     }
