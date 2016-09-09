@@ -11,12 +11,18 @@ final class ErrorHandler
     private $autoExit = true;
     private $cli;
     private $terminalWidth;
+    private $hasColorSupport;
 
     private $emailCallback;
     private $exceptionTemplate;
     private $logErrors;
     private $displayExceptions;
     private $emailErrors;
+
+    private static $colors = array(
+        '<error>'   => "\033[37;41m",
+        '</error>'  => "\033[0m",
+    );
 
     private static $errors = array(
         E_ERROR                 => 'E_ERROR',
@@ -182,15 +188,16 @@ final class ErrorHandler
 
     private function outputError($text)
     {
-        static $replace;
-        if ($replace === null) {
-            $replace = array(
-                '<error>'   => "\033[37;41m",
-                '</error>'  => "\033[0m",
-            );
+        echo str_replace(array_keys(self::$colors), $this->hasColorSupport() ? array_values(self::$colors) : '', $text) . PHP_EOL;
+    }
+
+    private function hasColorSupport()
+    {
+        if ($this->hasColorSupport === null) {
+            $this->hasColorSupport = function_exists('posix_isatty') && @posix_isatty($this->stream);
         }
 
-        echo str_replace(array_keys($replace), array_values($replace), $text) . PHP_EOL;
+        return $this->hasColorSupport;
     }
 
     public static function getExceptionCode($exception)
