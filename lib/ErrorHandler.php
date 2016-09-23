@@ -231,7 +231,7 @@ final class ErrorHandler
             return;
         }
 
-        file_put_contents(ini_get('error_log'), sprintf('[%s] %s%s', date('d-M-Y H:i:s e'), $msg, PHP_EOL), FILE_APPEND);
+        error_log($msg);
     }
 
     public function logException($exception)
