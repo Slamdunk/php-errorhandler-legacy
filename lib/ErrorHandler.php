@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Slam\ErrorHandler;
 
+use Doctrine\Common\Util\Debug as DoctrineDebug;
+
 final class ErrorHandler
 {
     private $autoExit = true;
@@ -232,15 +234,6 @@ final class ErrorHandler
         fwrite($this->getErrorOutputStream(), str_replace(array_keys(self::$colors), $this->hasColorSupport ? array_values(self::$colors) : '', $text) . PHP_EOL);
     }
 
-    public function logError(string $msg)
-    {
-        if (! $this->logErrors()) {
-            return;
-        }
-
-        error_log($msg);
-    }
-
     public function logException(\Throwable $exception)
     {
         if (! $this->logErrors()) {
@@ -259,24 +252,10 @@ final class ErrorHandler
                 $this->purgeTrace($exception->getTraceAsString())
             );
 
-            $this->logError($output);
+            error_log($output);
 
             ++$i;
         } while ($exception = $exception->getPrevious());
-    }
-
-    public function emailError(string $subject, string $bodyText)
-    {
-        if (! $this->logErrors()) {
-            return;
-        }
-
-        $callback = $this->emailCallback;
-        try {
-            $callback($subject, $bodyText);
-        } catch (\Throwable $e) {
-            $this->logException($e);
-        }
     }
 
     public function emailException(\Throwable $exception)
@@ -324,12 +303,17 @@ final class ErrorHandler
             $bodyText .= '$_POST = ' . print_r($_POST, true) . PHP_EOL;
         }
         if (isset($_SESSION) and ! empty($_SESSION)) {
-            $bodyText .= '$_SESSION = ' . print_r($_SESSION, true) . PHP_EOL;
+            $bodyText .= '$_SESSION = ' . print_r(class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true) . PHP_EOL;
         }
 
         $subject = sprintf('Error: %s', $exception->getMessage());
 
-        $this->emailError($subject, $bodyText);
+        $callback = $this->emailCallback;
+        try {
+            $callback($subject, $bodyText);
+        } catch (\Throwable $e) {
+            $this->logException($e);
+        }
     }
 
     private function getExceptionCode(\Throwable $exception)

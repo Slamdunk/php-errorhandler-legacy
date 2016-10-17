@@ -128,31 +128,26 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->errorHandler->setLogErrors(false);
 
-        $this->errorHandler->logError(uniqid());
         $this->errorHandler->logException($this->exception);
 
         $this->assertSame(0, filesize($this->errorLog));
 
         $this->errorHandler->setLogErrors(true);
 
-        $error = uniqid();
         $exception = new ErrorException(uniqid(), E_USER_ERROR, E_ERROR, __FILE__, 1, $this->exception);
 
-        $this->errorHandler->logError($error);
         $this->errorHandler->logException($exception);
 
         $errorLogContent = file_get_contents($this->errorLog);
 
-        $this->assertContains($error, $errorLogContent);
         $this->assertContains($exception->getMessage(), $errorLogContent);
         $this->assertContains($this->exception->getMessage(), $errorLogContent);
     }
 
-    public function testEmailErrorAndException()
+    public function testEmailException()
     {
         $this->errorHandler->setLogErrors(false);
 
-        $this->errorHandler->emailError(uniqid(), uniqid());
         $this->errorHandler->emailException($this->exception);
 
         $this->assertEmpty($this->emailsSent);
@@ -184,13 +179,17 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $errorHandler = new ErrorHandler($mailCallback);
         $errorHandler->setLogErrors(true);
 
-        $subject = uniqid();
-        $bodyText = uniqid();
-        $errorHandler->emailError($subject, $bodyText);
+        $errorHandler->emailException($this->exception);
 
         $errorLogContent = file_get_contents($this->errorLog);
-        $this->assertContains($subject, $errorLogContent);
-        $this->assertContains($bodyText, $errorLogContent);
+        $this->assertNotContains($this->exception->getMessage(), $errorLogContent);
         $this->assertContains($mailError, $errorLogContent);
+    }
+
+    public function testUsernameInEmailSubject()
+    {
+        $_SESSION = array('custom_username_key' => uniqid('bob_'));
+
+        $this->errorHandler->setLogErrors(true);
     }
 }
