@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace Slam\ErrorHandler;
 
-use ErrorException;
-
 final class ErrorHandler
 {
     private $autoExit = true;
     private $cli;
     private $terminalWidth;
-    private $hasColorSupport;
     private $errorOutputStream;
-
-    private $emailCallback;
-    private $exceptionTemplate;
+    private $hasColorSupport = false;
     private $logErrors;
-    private $displayExceptions;
-    private $emailErrors;
+    private $emailCallback;
 
     private static $colors = array(
         '<error>'   => "\033[37;41m",
@@ -43,13 +37,9 @@ final class ErrorHandler
         E_USER_DEPRECATED       => 'E_USER_DEPRECATED',
     );
 
-    public function __construct(callable $emailCallback, bool $displayExceptions = false, bool $logErrors = true, bool $emailErrors = true, string $exceptionTemplate = null)
+    public function __construct(callable $emailCallback)
     {
         $this->emailCallback = $emailCallback;
-        $this->logErrors = $logErrors;
-        $this->displayExceptions = $displayExceptions;
-        $this->emailErrors = $emailErrors;
-        $this->exceptionTemplate = $exceptionTemplate ?: dirname(__DIR__) . '/templates/exception.html';
     }
 
     public function setAutoExit(bool $autoExit)
@@ -57,12 +47,17 @@ final class ErrorHandler
         $this->autoExit = $autoExit;
     }
 
+    public function autoExit() : bool
+    {
+        return $this->autoExit;
+    }
+
     public function setCli(bool $cli)
     {
         $this->cli = $cli;
     }
 
-    public function isCli()
+    public function isCli() : bool
     {
         if ($this->cli === null) {
             $this->setCli(PHP_SAPI === 'cli');
@@ -76,27 +71,31 @@ final class ErrorHandler
         $this->terminalWidth = $terminalWidth;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     public function getTerminalWidth()
     {
-        if ($this->terminalWidth !== null) {
-            return $this->terminalWidth;
+        if ($this->terminalWidth === null) {
+            // @codeCoverageIgnoreStart
+            if (defined('PHP_WINDOWS_VERSION_BUILD') and $ansicon = getenv('ANSICON')) {
+                $this->setTerminalWidth((int) preg_replace('{^(\d+)x.*$}', '$1', $ansicon));
+            }
+            // @codeCoverageIgnoreEnd
+
+            if (preg_match("{rows.(\d+);.columns.(\d+);}i", exec('stty -a 2> /dev/null | grep columns'), $match)) {
+                $this->setTerminalWidth((int) $match[2]);
+            }
         }
 
-        if (defined('PHP_WINDOWS_VERSION_BUILD') && $ansicon = getenv('ANSICON')) {
-            return preg_replace('{^(\d+)x.*$}', '$1', $ansicon);
-        }
-
-        if (preg_match("{rows.(\d+);.columns.(\d+);}i", exec('stty -a 2> /dev/null | grep columns'), $match)) {
-            return $match[2];
-        }
+        return $this->terminalWidth;
     }
 
     public function setErrorOutputStream($errorOutputStream)
     {
+        if (! is_resource($errorOutputStream)) {
+            return;
+        }
+
         $this->errorOutputStream = $errorOutputStream;
+        $this->hasColorSupport = (function_exists('posix_isatty') and @posix_isatty($errorOutputStream));
     }
 
     public function getErrorOutputStream()
@@ -108,6 +107,20 @@ final class ErrorHandler
         return $this->errorOutputStream;
     }
 
+    public function setLogErrors(bool $logErrors)
+    {
+        $this->logErrors = $logErrors;
+    }
+
+    public function logErrors() : bool
+    {
+        if ($this->logErrors === null) {
+            $this->setLogErrors(! interface_exists(\PHPUnit_Framework_Test::class));
+        }
+
+        return $this->logErrors;
+    }
+
     public function register()
     {
         set_error_handler(array($this, 'errorHandler'), error_reporting());
@@ -116,127 +129,121 @@ final class ErrorHandler
 
     public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0)
     {
-        // Controllo necessario per l'operatore @ di soppressione
+        // Mandatory check for @ operator
         if (error_reporting() === 0) {
             return;
         }
 
-        throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
+        throw new \ErrorException($errstr, $errno, $errno, $errfile, $errline);
     }
 
-    public function exceptionHandler($exception)
+    public function exceptionHandler(\Throwable $exception)
     {
         $this->logException($exception);
+        $this->emailException($exception);
 
         if ($this->isCli()) {
-            try {
-                $currentEx = $exception;
-                do {
-                    $width = $this->getTerminalWidth() ? $this->getTerminalWidth() - 3 : 120;
-                    $lines = array(
-                        'Message: ' . $currentEx->getMessage(),
-                        '',
-                        'Class: ' . get_class($currentEx),
-                        'Code: ' . $this->getExceptionCode($currentEx),
-                        'File: ' . $currentEx->getFile() . ':' . $currentEx->getLine(),
-                    );
-                    $lines = array_merge($lines, explode(PHP_EOL, self::purgeTrace($currentEx->getTraceAsString())));
+            $currentEx = $exception;
+            do {
+                $width = $this->getTerminalWidth() ? $this->getTerminalWidth() - 3 : 120;
+                $lines = array(
+                    'Message: ' . $currentEx->getMessage(),
+                    '',
+                    'Class: ' . get_class($currentEx),
+                    'Code: ' . $this->getExceptionCode($currentEx),
+                    'File: ' . $currentEx->getFile() . ':' . $currentEx->getLine(),
+                );
+                $lines = array_merge($lines, explode(PHP_EOL, $this->purgeTrace($currentEx->getTraceAsString())));
 
-                    $i = 0;
-                    while (isset($lines[$i])) {
-                        $line = $lines[$i];
+                $i = 0;
+                while (isset($lines[$i])) {
+                    $line = $lines[$i];
 
-                        if (isset($line[$width])) {
-                            $lines[$i] = substr($line, 0, $width);
-                            if (isset($line[0]) and $line[0] !== '#') {
-                                array_splice($lines, $i + 1, 0, '   ' . substr($line, $width));
-                            }
+                    if (isset($line[$width])) {
+                        $lines[$i] = substr($line, 0, $width);
+                        if (isset($line[0]) and $line[0] !== '#') {
+                            array_splice($lines, $i + 1, 0, '   ' . substr($line, $width));
                         }
-
-                        $i += 1;
                     }
 
-                    $this->outputError(PHP_EOL);
-                    $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
-                    foreach ($lines as $line) {
-                        $this->outputError(sprintf('<error> %s%s </error>', $line, str_repeat(' ', max(0, $width - strlen($line)))));
-                    }
-                    $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
-                    $this->outputError(PHP_EOL);
-                } while ($currentEx = $currentEx->getPrevious());
-            } catch (\Throwable $e) {
-                $this->logException($e);
-            }
+                    $i += 1;
+                }
 
-            $exitStatus = 255;
-        } else {
+                $this->outputError(PHP_EOL);
+                $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
+                foreach ($lines as $line) {
+                    $this->outputError(sprintf('<error> %s%s </error>', $line, str_repeat(' ', max(0, $width - strlen($line)))));
+                }
+                $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
+                $this->outputError(PHP_EOL);
+            } while ($currentEx = $currentEx->getPrevious());
+
             // @codeCoverageIgnoreStart
-            if (! headers_sent()) {
-                header('HTTP/1.1 500 Internal Server Error');
+            if ($this->autoExit()) {
+                exit(255);
             }
             // @codeCoverageIgnoreEnd
 
-            try {
-                $template = $this->exceptionTemplate;
-                $renderException = function ($exception, bool $ajax, bool $displayExceptions) use ($template) {
-                    include $template;
-                };
-
-                $renderException(
-                    $exception,
-                    (isset($_SERVER) and isset($_SERVER['X_REQUESTED_WITH']) and $_SERVER['X_REQUESTED_WITH'] === 'XMLHttpRequest'),
-                    $this->displayExceptions
-                );
-            } catch (\Throwable $e) {
-                $this->logException($e);
-            }
+            return;
         }
-
-        $this->emailException($exception);
 
         // @codeCoverageIgnoreStart
-        if ($this->autoExit and isset($exitStatus)) {
-            exit($exitStatus);
+        if (! headers_sent()) {
+            header('HTTP/1.1 500 Internal Server Error');
         }
         // @codeCoverageIgnoreEnd
-    }
 
-    private function outputError($text)
-    {
-        fwrite($this->getErrorOutputStream(), str_replace(array_keys(self::$colors), $this->hasColorSupport() ? array_values(self::$colors) : '', $text) . PHP_EOL);
-    }
-
-    private function hasColorSupport()
-    {
-        if ($this->hasColorSupport === null) {
-            $this->hasColorSupport = function_exists('posix_isatty') && @posix_isatty($this->stream);
+        $ajax = (isset($_SERVER) and isset($_SERVER['X_REQUESTED_WITH']) and $_SERVER['X_REQUESTED_WITH'] === 'XMLHttpRequest');
+        $output = '';
+        if (! $ajax) {
+            $output .= '<!DOCTYPE html><html><head><title>500: Errore interno</title></head><body>';
+        }
+        $output .= '<h1>500: Errore interno</h1>';
+        if ((bool) ini_get('display_errors') === true) {
+            $currentEx = $exception;
+            do {
+                $output .= sprintf(
+                    '<div style="background-color: #fcc; border: 1px solid #600; color: #600; margin: 1em 0; padding: .33em 6px">
+                        <b>Message:</b> %s<br />
+                        <br />
+                        <b>Class:</b> %s<br />
+                        <b>Code:</b> %s<br />
+                        <b>File:</b> %s:%s<br />
+                        <b>Stack trace:</b><pre>%s</pre>
+                    </div>',
+                    htmlspecialchars($currentEx->getMessage()),
+                    get_class($currentEx),
+                    $this->getExceptionCode($currentEx),
+                    $currentEx->getFile(),
+                    $currentEx->getLine(),
+                    htmlspecialchars($this->purgeTrace($currentEx->getTraceAsString()))
+                );
+            } while ($currentEx = $currentEx->getPrevious());
+        }
+        if (! $ajax) {
+            $output .= '</body></html>';
         }
 
-        return $this->hasColorSupport;
+        echo $output;
     }
 
-    public static function getExceptionCode($exception)
+    private function outputError(string $text)
     {
-        $code = $exception->getCode();
-        if ($exception instanceof ErrorException and isset(static::$errors[$code])) {
-            $code = static::$errors[$code];
-        }
-
-        return $code;
+        fwrite($this->getErrorOutputStream(), str_replace(array_keys(self::$colors), $this->hasColorSupport ? array_values(self::$colors) : '', $text) . PHP_EOL);
     }
 
-    public function logError($msg)
+    public function logError(string $msg)
     {
-        if (! $this->logErrors) {
+        if (! $this->logErrors()) {
             return;
         }
 
         error_log($msg);
     }
 
-    public function logException($exception)
+    public function logException(\Throwable $exception)
     {
-        if (! $this->logErrors) {
+        if (! $this->logErrors()) {
             return;
         }
 
@@ -249,7 +256,7 @@ final class ErrorHandler
                 $exception->getFile(),
                 $exception->getLine(),
                 PHP_EOL,
-                self::purgeTrace($exception->getTraceAsString())
+                $this->purgeTrace($exception->getTraceAsString())
             );
 
             $this->logError($output);
@@ -258,9 +265,9 @@ final class ErrorHandler
         } while ($exception = $exception->getPrevious());
     }
 
-    public function emailError($subject, $bodyText)
+    public function emailError(string $subject, string $bodyText)
     {
-        if (! $this->emailErrors) {
+        if (! $this->logErrors()) {
             return;
         }
 
@@ -272,9 +279,9 @@ final class ErrorHandler
         }
     }
 
-    public function emailException($exception)
+    public function emailException(\Throwable $exception)
     {
-        if (! $this->emailErrors) {
+        if (! $this->logErrors()) {
             return;
         }
 
@@ -310,7 +317,7 @@ final class ErrorHandler
                 $bodyText .= sprintf('%-15s%s%s', $key, $val, PHP_EOL);
             }
 
-            $bodyText .= 'Stack trace:' . "\n\n" . self::purgeTrace($currentEx->getTraceAsString()) . "\n\n";
+            $bodyText .= 'Stack trace:' . "\n\n" . $this->purgeTrace($currentEx->getTraceAsString()) . "\n\n";
         } while ($currentEx = $currentEx->getPrevious());
 
         if (isset($_SESSION) and ! empty($_SESSION)) {
@@ -325,7 +332,17 @@ final class ErrorHandler
         $this->emailError($subject, $bodyText);
     }
 
-    public static function purgeTrace($trace)
+    private function getExceptionCode(\Throwable $exception)
+    {
+        $code = $exception->getCode();
+        if ($exception instanceof \ErrorException and isset(static::$errors[$code])) {
+            $code = static::$errors[$code];
+        }
+
+        return $code;
+    }
+
+    private function purgeTrace(string $trace) : string
     {
         return defined('ROOT_PATH') ? str_replace(ROOT_PATH, '.', $trace) : $trace;
     }

@@ -14,16 +14,23 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        ini_set('display_errors', (string) false);
         $this->backupErrorLog = ini_get('error_log');
         $this->errorLog = __DIR__ . DIRECTORY_SEPARATOR . 'error_log_test';
         touch($this->errorLog);
         ini_set('error_log', $this->errorLog);
 
         $this->exception = new ErrorException(uniqid('normal_'), E_USER_NOTICE);
-        $this->mailError = uniqid('mail_not_sent_');
-        $this->mailCallback = function ($body, $text) {
-            throw new ErrorException($this->mailError, E_USER_ERROR);
-        };
+        $this->emailsSent = array();
+        $this->errorHandler = new ErrorHandler(function ($subject, $body) {
+            $this->emailsSent[] = array(
+                'subject' => $subject,
+                'body' => $body,
+            );
+        });
+
+        $this->errorHandler->setAutoExit(false);
+        $this->errorHandler->setTerminalWidth(50);
     }
 
     protected function tearDown()
@@ -32,66 +39,67 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         @unlink($this->errorLog);
     }
 
+    public function testDefaultConfiguration()
+    {
+        $errorHandler = new ErrorHandler(function(){});
+
+        $this->assertTrue($errorHandler->isCli());
+        $this->assertTrue($errorHandler->autoExit());
+        $this->assertNotNull($errorHandler->getTerminalWidth());
+        $this->assertSame(STDERR, $errorHandler->getErrorOutputStream());
+        $this->assertFalse($errorHandler->logErrors());
+
+        $errorHandler->setCli(false);
+        $errorHandler->setAutoExit(false);
+        $errorHandler->setTerminalWidth($width = mt_rand(1, 999));
+        $errorHandler->setErrorOutputStream($memoryStream = fopen('php://memory', 'r+'));
+        $errorHandler->setLogErrors(true);
+
+        $this->assertFalse($errorHandler->isCli());
+        $this->assertFalse($errorHandler->autoExit());
+        $this->assertSame($width, $errorHandler->getTerminalWidth());
+        $this->assertSame($memoryStream, $errorHandler->getErrorOutputStream());
+        $this->assertTrue($errorHandler->logErrors());
+
+        $errorHandler->setErrorOutputStream(uniqid('not_a_stream_'));
+        $this->assertSame($memoryStream, $errorHandler->getErrorOutputStream());
+    }
+
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRegistraConfigurazioniBase()
+    public function testRegisterBuiltinHandlers()
     {
-        $this->assertSame('E_USER_NOTICE', ErrorHandler::getExceptionCode($this->exception));
-        $errorHandler = new ErrorHandler($this->mailCallback);
-        $errorHandler->register();
+        $this->errorHandler->register();
         $arrayPerVerificaErrori = array();
 
-        @ $arrayPerVerificaErrori['nessuna_eccezione_lanciata'];
+        @ $arrayPerVerificaErrori['no_exception_thrown_on_undefined_index_now'];
 
         $this->setExpectedException(ErrorException::class);
-        $arrayPerVerificaErrori['undefined_ndex'];
+        $arrayPerVerificaErrori['undefined_index'];
     }
 
     public function testHandleCliException()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
-        $errorHandler->setAutoExit(false);
-        $errorHandler->setCli(true);
-        $errorHandler->setTerminalWidth(50);
-
-        $this->assertSame(STDERR, $errorHandler->getErrorOutputStream());
-
         $memoryStream = fopen('php://memory', 'r+');
-        $errorHandler->setErrorOutputStream($memoryStream);
+        $this->errorHandler->setErrorOutputStream($memoryStream);
 
-        $errorHandler->exceptionHandler($this->exception);
+        $this->errorHandler->exceptionHandler($this->exception);
 
         fseek($memoryStream, 0);
         $output = stream_get_contents($memoryStream);
         $this->assertContains($this->exception->getMessage(), $output);
     }
 
-    public function testErroreNellaCliVieneComunqueLoggata()
+    public function testHandleWebExceptionWithDisplay()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
-        $errorHandler->setAutoExit(false);
-        $errorHandler->setCli(true);
-        $errorHandler->setTerminalWidth(50);
-
-        $fakeStream = uniqid('fake_stream_');
-        $errorHandler->setErrorOutputStream($fakeStream);
-
-        $errorHandler->exceptionHandler($this->exception);
-
-        $errorLogContent = file_get_contents($this->errorLog);
-        $this->assertContains('to be resource, string given', $errorLogContent);
-    }
-
-    public function testHandleWebExceptionInSviluppo()
-    {
-        $errorHandler = new ErrorHandler($this->mailCallback, true, true, false);
-        $errorHandler->setAutoExit(false);
-        $errorHandler->setCli(false);
+        ini_set('display_errors', (string) true);
+        $this->errorHandler->setCli(false);
+        $this->errorHandler->setLogErrors(true);
 
         ob_start();
-        $errorHandler->exceptionHandler($this->exception);
+        $this->errorHandler->exceptionHandler($this->exception);
         $output = ob_get_clean();
 
         $this->assertContains($this->exception->getMessage(), $output);
@@ -100,32 +108,14 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains($this->exception->getMessage(), $errorLogContent);
     }
 
-    public function testHandleWebExceptionInSviluppoConErrore()
+    public function testHandleWebExceptionWithoutDisplay()
     {
-        $templateInesistente = uniqid('template_inesistente_');
-        $errorHandler = new ErrorHandler($this->mailCallback, true, true, false, $templateInesistente);
-        $errorHandler->setAutoExit(false);
-        $errorHandler->setCli(false);
+        ini_set('display_errors', (string) false);
+        $this->errorHandler->setCli(false);
+        $this->errorHandler->setLogErrors(true);
 
         ob_start();
-        $errorHandler->exceptionHandler($this->exception);
-        $output = ob_get_clean();
-
-        $this->assertNotContains($this->exception->getMessage(), $output);
-
-        $errorLogContent = file_get_contents($this->errorLog);
-        $this->assertContains($this->exception->getMessage(), $errorLogContent);
-        $this->assertContains($templateInesistente, $errorLogContent);
-    }
-
-    public function testHandleWebExceptionInProduzione()
-    {
-        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
-        $errorHandler->setAutoExit(false);
-        $errorHandler->setCli(false);
-
-        ob_start();
-        $errorHandler->exceptionHandler($this->exception);
+        $this->errorHandler->exceptionHandler($this->exception);
         $output = ob_get_clean();
 
         $this->assertNotContains($this->exception->getMessage(), $output);
@@ -136,20 +126,20 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testLogErrorAndException()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, false, false, false);
+        $this->errorHandler->setLogErrors(false);
 
-        $errorHandler->logError(uniqid());
-        $errorHandler->logException($this->exception);
+        $this->errorHandler->logError(uniqid());
+        $this->errorHandler->logException($this->exception);
 
         $this->assertSame(0, filesize($this->errorLog));
 
-        $errorHandler = new ErrorHandler($this->mailCallback, false, true, false);
+        $this->errorHandler->setLogErrors(true);
 
         $error = uniqid();
         $exception = new ErrorException(uniqid(), E_USER_ERROR, E_ERROR, __FILE__, 1, $this->exception);
 
-        $errorHandler->logError($error);
-        $errorHandler->logException($exception);
+        $this->errorHandler->logError($error);
+        $this->errorHandler->logException($exception);
 
         $errorLogContent = file_get_contents($this->errorLog);
 
@@ -160,30 +150,23 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testEmailErrorAndException()
     {
-        $emails = array();
-        $callback = function ($subject, $body) use (& $emails) {
-            $emails[] = array(
-                'subject' => $subject,
-                'body' => $body,
-            );
-        };
+        $this->errorHandler->setLogErrors(false);
 
-        $errorHandler = new ErrorHandler($callback, false, false, false);
+        $this->errorHandler->emailError(uniqid(), uniqid());
+        $this->errorHandler->emailException($this->exception);
 
-        $errorHandler->emailError(uniqid(), uniqid());
-        $errorHandler->emailException($this->exception);
+        $this->assertEmpty($this->emailsSent);
 
-        $this->assertEmpty($emails);
-
-        $errorHandler = new ErrorHandler($callback, false, false, true);
+        $this->errorHandler->setLogErrors(true);
 
         $key = uniqid(__FUNCTION__);
         $_SESSION = array($key => uniqid());
         $_POST = array($key => uniqid());
 
-        $errorHandler->emailException($this->exception);
+        $this->errorHandler->emailException($this->exception);
 
-        $message = current($emails);
+        $this->assertNotEmpty($this->emailsSent);
+        $message = current($this->emailsSent);
         $this->assertNotEmpty($message);
 
         $messageText = $message['body'];
@@ -194,7 +177,12 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testErroriNellInvioDellaMailVengonoComunqueLoggati()
     {
-        $errorHandler = new ErrorHandler($this->mailCallback, false, true, true);
+        $mailError = uniqid('mail_not_sent_');
+        $mailCallback = function ($body, $text) use ($mailError){
+            throw new ErrorException($mailError, E_USER_ERROR);
+        };
+        $errorHandler = new ErrorHandler($mailCallback);
+        $errorHandler->setLogErrors(true);
 
         $subject = uniqid();
         $bodyText = uniqid();
@@ -203,6 +191,6 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $errorLogContent = file_get_contents($this->errorLog);
         $this->assertContains($subject, $errorLogContent);
         $this->assertContains($bodyText, $errorLogContent);
-        $this->assertContains($this->mailError, $errorLogContent);
+        $this->assertContains($mailError, $errorLogContent);
     }
 }
