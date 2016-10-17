@@ -188,8 +188,14 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testUsernameInEmailSubject()
     {
-        $_SESSION = array('custom_username_key' => uniqid('bob_'));
+        $username = uniqid('bob_');
+        $_SESSION = array('custom_username_key' => $username);
 
         $this->errorHandler->setLogErrors(true);
+        $this->errorHandler->emailException($this->exception);
+
+        $message = current($this->emailsSent);
+
+        $this->assertContains($username, $message['subject']);
     }
 }

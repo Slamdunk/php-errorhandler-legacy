@@ -302,11 +302,24 @@ final class ErrorHandler
         if (isset($_POST) and ! empty($_POST)) {
             $bodyText .= '$_POST = ' . print_r($_POST, true) . PHP_EOL;
         }
+        $username = null;
         if (isset($_SESSION) and ! empty($_SESSION)) {
-            $bodyText .= '$_SESSION = ' . print_r(class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true) . PHP_EOL;
+            $sessionText = print_r(class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true);
+            $bodyText .= '$_SESSION = ' . $sessionText . PHP_EOL;
+
+            $count = 0;
+            $username = preg_replace('/.+\[([^\]]+)?username([^\]]+)?\] => ([\w\-\.]+).+/s', '\3', $sessionText, -1, $count);
+            if (! isset($username[0]) or isset($username[255]) or $count !== 1) {
+                $username = null;
+            }
         }
 
         $subject = sprintf('Error: %s', $exception->getMessage());
+        $subject = sprintf('%s%s: %s',
+            'Error',
+            $username ? sprintf(' [%s]', $username) : '',
+            $exception->getMessage()
+        );
 
         $callback = $this->emailCallback;
         try {
