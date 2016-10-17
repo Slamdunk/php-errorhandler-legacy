@@ -320,11 +320,11 @@ final class ErrorHandler
             $bodyText .= 'Stack trace:' . "\n\n" . $this->purgeTrace($currentEx->getTraceAsString()) . "\n\n";
         } while ($currentEx = $currentEx->getPrevious());
 
-        if (isset($_SESSION) and ! empty($_SESSION)) {
-            $bodyText .= '$_SESSION = ' . print_r($_SESSION, true) . PHP_EOL;
-        }
         if (isset($_POST) and ! empty($_POST)) {
             $bodyText .= '$_POST = ' . print_r($_POST, true) . PHP_EOL;
+        }
+        if (isset($_SESSION) and ! empty($_SESSION)) {
+            $bodyText .= '$_SESSION = ' . print_r($_SESSION, true) . PHP_EOL;
         }
 
         $subject = sprintf('Error: %s', $exception->getMessage());
