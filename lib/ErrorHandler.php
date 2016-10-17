@@ -314,9 +314,7 @@ final class ErrorHandler
             }
         }
 
-        $subject = sprintf('Error: %s', $exception->getMessage());
-        $subject = sprintf('%s%s: %s',
-            'Error',
+        $subject = sprintf('Error%s: %s',
             $username ? sprintf(' [%s]', $username) : '',
             $exception->getMessage()
         );
