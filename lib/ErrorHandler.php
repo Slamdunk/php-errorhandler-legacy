@@ -201,24 +201,26 @@ final class ErrorHandler
             $output .= '<!DOCTYPE html><html><head><title>500: Errore interno</title></head><body>';
         }
         $output .= '<h1>500: Errore interno</h1>';
+        $output .= PHP_EOL;
         if ((bool) ini_get('display_errors') === true) {
             $currentEx = $exception;
             do {
                 $output .= sprintf(
-                    '<div style="background-color: #fcc; border: 1px solid #600; color: #600; margin: 1em 0; padding: .33em 6px">
-                        <b>Message:</b> %s<br />
-                        <br />
-                        <b>Class:</b> %s<br />
-                        <b>Code:</b> %s<br />
-                        <b>File:</b> %s:%s<br />
-                        <b>Stack trace:</b><pre>%s</pre>
-                    </div>',
+                    '<div style="background-color: #FCC; border: 1px solid #600; color: #600; margin: 1em 0; padding: .33em 6px 0">'
+                        . '<b>Message:</b> %s<br />'
+                        . '<br />'
+                        . '<b>Class:</b> %s<br />'
+                        . '<b>Code:</b> %s<br />'
+                        . '<b>File:</b> %s:%s<br />'
+                        . '<b>Stack trace:</b><pre>%s</pre>'
+                    . '</div>%s',
                     htmlspecialchars($currentEx->getMessage()),
                     get_class($currentEx),
                     $this->getExceptionCode($currentEx),
                     $currentEx->getFile(),
                     $currentEx->getLine(),
-                    htmlspecialchars($this->purgeTrace($currentEx->getTraceAsString()))
+                    htmlspecialchars($this->purgeTrace($currentEx->getTraceAsString())),
+                    PHP_EOL
                 );
             } while ($currentEx = $currentEx->getPrevious());
         }
