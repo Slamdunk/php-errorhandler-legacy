@@ -14,6 +14,7 @@ final class ErrorHandler
     private $errorOutputStream;
     private $hasColorSupport = false;
     private $logErrors;
+    private $logVariables = true;
     private $emailCallback;
 
     private static $colors = array(
@@ -121,6 +122,16 @@ final class ErrorHandler
         }
 
         return $this->logErrors;
+    }
+
+    public function setLogVariables(bool $logVariables)
+    {
+        $this->logVariables = $logVariables;
+    }
+
+    public function logVariables() : bool
+    {
+        return $this->logVariables;
     }
 
     public function register()
@@ -301,18 +312,21 @@ final class ErrorHandler
             $bodyText .= 'Stack trace:' . "\n\n" . $this->purgeTrace($currentEx->getTraceAsString()) . "\n\n";
         } while ($currentEx = $currentEx->getPrevious());
 
-        if (isset($_POST) and ! empty($_POST)) {
-            $bodyText .= '$_POST = ' . print_r($_POST, true) . PHP_EOL;
-        }
         $username = null;
-        if (isset($_SESSION) and ! empty($_SESSION)) {
-            $sessionText = print_r(class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true);
-            $bodyText .= '$_SESSION = ' . $sessionText . PHP_EOL;
 
-            $count = 0;
-            $username = preg_replace('/.+\[([^\]]+)?username([^\]]+)?\] => ([\w\-\.]+).+/s', '\3', $sessionText, -1, $count);
-            if (! isset($username[0]) or isset($username[255]) or $count !== 1) {
-                $username = null;
+        if ($this->logVariables()) {
+            if (isset($_POST) and ! empty($_POST)) {
+                $bodyText .= '$_POST = ' . print_r($_POST, true) . PHP_EOL;
+            }
+            if (isset($_SESSION) and ! empty($_SESSION)) {
+                $sessionText = print_r(class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true);
+                $bodyText .= '$_SESSION = ' . $sessionText . PHP_EOL;
+
+                $count = 0;
+                $username = preg_replace('/.+\[([^\]]+)?username([^\]]+)?\] => ([\w\-\.]+).+/s', '\3', $sessionText, -1, $count);
+                if (! isset($username[0]) or isset($username[255]) or $count !== 1) {
+                    $username = null;
+                }
             }
         }
 

@@ -170,6 +170,30 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains($_POST[$key], $messageText);
     }
 
+    public function testCanHideVariablesFromEmail()
+    {
+        $this->assertTrue($this->errorHandler->logVariables());
+        $this->errorHandler->setLogVariables(false);
+        $this->assertFalse($this->errorHandler->logVariables());
+
+        $this->errorHandler->setLogErrors(true);
+
+        $key = uniqid(__FUNCTION__);
+        $_SESSION = array($key => uniqid());
+        $_POST = array($key => uniqid());
+
+        $this->errorHandler->emailException($this->exception);
+
+        $this->assertNotEmpty($this->emailsSent);
+        $message = current($this->emailsSent);
+        $this->assertNotEmpty($message);
+
+        $messageText = $message['body'];
+        $this->assertContains($this->exception->getMessage(), $messageText);
+        $this->assertNotContains($_SESSION[$key], $messageText);
+        $this->assertNotContains($_POST[$key], $messageText);
+    }
+
     public function testErroriNellInvioDellaMailVengonoComunqueLoggati()
     {
         $mailError = uniqid('mail_not_sent_');
