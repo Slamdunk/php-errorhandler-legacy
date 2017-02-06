@@ -6,8 +6,9 @@ namespace SlamTest\ErrorHandler;
 
 use ErrorException;
 use Slam\ErrorHandler\ErrorHandler;
+use PHPUnit\Framework\TestCase;
 
-final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
+final class ErrorHandlerTest extends TestCase
 {
     private $backupErrorLog;
     private $errorLog;
@@ -76,7 +77,7 @@ final class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
         @ $arrayPerVerificaErrori['no_exception_thrown_on_undefined_index_now'];
 
-        $this->setExpectedException(ErrorException::class);
+        $this->expectException(ErrorException::class);
         $arrayPerVerificaErrori['undefined_index'];
     }
 

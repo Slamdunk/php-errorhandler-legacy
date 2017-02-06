@@ -118,7 +118,10 @@ final class ErrorHandler
     public function logErrors() : bool
     {
         if ($this->logErrors === null) {
-            $this->setLogErrors(! interface_exists(\PHPUnit_Framework_Test::class));
+            $this->setLogErrors(
+                    ! interface_exists(\PHPUnit_Framework_Test::class)
+                and ! interface_exists(\PHPUnit\Framework\Test::class)
+            );
         }
 
         return $this->logErrors;
