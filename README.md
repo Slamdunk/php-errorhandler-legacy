@@ -2,4 +2,4 @@
 
 [![Build Status](https://travis-ci.org/Slamdunk/php-errorhandler-legacy.svg?branch=master)](https://travis-ci.org/Slamdunk/php-errorhandler-legacy)
 
-Crappy class to manage errors and exceptions, here just to use them through composer
+Crappy class to manage errors and exceptions
