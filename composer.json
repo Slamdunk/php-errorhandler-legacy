@@ -20,10 +20,11 @@
             "SlamTest\\ErrorHandler\\": "tests/"
         }
     },
-    "require" : {
-        "php" : "^7.0"
+    "require": {
+        "php": "^7.0"
     },
     "require-dev": {
+        "slam/php-cs-fixer-extensions": "^1.0",
         "slam/php-debug-r": "^1.0.2"
     }
 }

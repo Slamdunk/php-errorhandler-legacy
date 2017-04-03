@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace SlamTest\ErrorHandler;
 
 use ErrorException;
-use Slam\ErrorHandler\ErrorHandler;
 use PHPUnit\Framework\TestCase;
+use Slam\ErrorHandler\ErrorHandler;
 
 final class ErrorHandlerTest extends TestCase
 {
@@ -42,7 +42,8 @@ final class ErrorHandlerTest extends TestCase
 
     public function testDefaultConfiguration()
     {
-        $errorHandler = new ErrorHandler(function(){});
+        $errorHandler = new ErrorHandler(function () {
+        });
 
         $this->assertTrue($errorHandler->isCli());
         $this->assertTrue($errorHandler->autoExit());
@@ -198,7 +199,7 @@ final class ErrorHandlerTest extends TestCase
     public function testErroriNellInvioDellaMailVengonoComunqueLoggati()
     {
         $mailError = uniqid('mail_not_sent_');
-        $mailCallback = function ($body, $text) use ($mailError){
+        $mailCallback = function ($body, $text) use ($mailError) {
             throw new ErrorException($mailError, E_USER_ERROR);
         };
         $errorHandler = new ErrorHandler($mailCallback);

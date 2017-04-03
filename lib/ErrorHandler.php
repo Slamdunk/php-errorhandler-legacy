@@ -50,7 +50,7 @@ final class ErrorHandler
         $this->autoExit = $autoExit;
     }
 
-    public function autoExit() : bool
+    public function autoExit(): bool
     {
         return $this->autoExit;
     }
@@ -60,7 +60,7 @@ final class ErrorHandler
         $this->cli = $cli;
     }
 
-    public function isCli() : bool
+    public function isCli(): bool
     {
         if ($this->cli === null) {
             $this->setCli(PHP_SAPI === 'cli');
@@ -115,7 +115,7 @@ final class ErrorHandler
         $this->logErrors = $logErrors;
     }
 
-    public function logErrors() : bool
+    public function logErrors(): bool
     {
         if ($this->logErrors === null) {
             $this->setLogErrors(
@@ -132,7 +132,7 @@ final class ErrorHandler
         $this->logVariables = $logVariables;
     }
 
-    public function logVariables() : bool
+    public function logVariables(): bool
     {
         return $this->logVariables;
     }
@@ -176,9 +176,9 @@ final class ErrorHandler
                     $line = $lines[$i];
 
                     if (isset($line[$width])) {
-                        $lines[$i] = substr($line, 0, $width);
+                        $lines[$i] = mb_substr($line, 0, $width);
                         if (isset($line[0]) and $line[0] !== '#') {
-                            array_splice($lines, $i + 1, 0, '   ' . substr($line, $width));
+                            array_splice($lines, $i + 1, 0, '   ' . mb_substr($line, $width));
                         }
                     }
 
@@ -188,7 +188,7 @@ final class ErrorHandler
                 $this->outputError(PHP_EOL);
                 $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
                 foreach ($lines as $line) {
-                    $this->outputError(sprintf('<error> %s%s </error>', $line, str_repeat(' ', max(0, $width - strlen($line)))));
+                    $this->outputError(sprintf('<error> %s%s </error>', $line, str_repeat(' ', max(0, $width - mb_strlen($line)))));
                 }
                 $this->outputError(sprintf('<error> %s </error>', str_repeat(' ', $width)));
                 $this->outputError(PHP_EOL);
@@ -356,7 +356,7 @@ final class ErrorHandler
         return $code;
     }
 
-    private function purgeTrace(string $trace) : string
+    private function purgeTrace(string $trace): string
     {
         return defined('ROOT_PATH') ? str_replace(ROOT_PATH, '.', $trace) : $trace;
     }
