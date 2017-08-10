@@ -77,6 +77,8 @@ final class ErrorHandler
     public function getTerminalWidth()
     {
         if ($this->terminalWidth === null) {
+            $this->setTerminalWidth(80);
+
             // @codeCoverageIgnoreStart
             if (defined('PHP_WINDOWS_VERSION_BUILD') and $ansicon = getenv('ANSICON')) {
                 $this->setTerminalWidth((int) preg_replace('{^(\d+)x.*$}', '$1', $ansicon));
