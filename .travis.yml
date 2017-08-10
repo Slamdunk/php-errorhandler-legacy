@@ -2,20 +2,25 @@ language: php
 
 sudo: false
 
+matrix:
+  fast_finish: true
+  include:
+    - php: 7.0
+      env: CS_CHECK=1
+    - php: 7.1
+      env: CODE_COVERAGE=1
+    - php: 7.2
+      env: COMPOSER_FLAGS="--ignore-platform-reqs"
+    - php: nightly
+      env: COMPOSER_FLAGS="--ignore-platform-reqs"
+
 cache:
-  directory:
-    - $HOME/.composer/cache
+  directories:
+    - $HOME/.composer
 
-php:
-  - 7.0
-  - 7.1
+install: wget -qO - https://github.com/Slamdunk/travis-scripts/raw/master/php-install.sh | sh
 
-install:
-  - composer install --prefer-dist
-
-script:
-  - phpunit --coverage-text
-  - vendor/bin/php-cs-fixer --diff --dry-run --verbose fix
+script: wget -qO - https://github.com/Slamdunk/travis-scripts/raw/master/php-script.sh | sh
 
 notifications:
   email: false
