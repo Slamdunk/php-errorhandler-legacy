@@ -341,6 +341,7 @@ final class ErrorHandler
         );
 
         $callback = $this->emailCallback;
+
         try {
             $callback($subject, $bodyText);
         } catch (\Throwable $e) {
