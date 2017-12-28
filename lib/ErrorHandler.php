@@ -79,13 +79,7 @@ final class ErrorHandler
         if (null === $this->terminalWidth) {
             $width = \getenv('COLUMNS');
 
-            // @codeCoverageIgnoreStart
-            if (\defined('PHP_WINDOWS_VERSION_BUILD') and $ansicon = \getenv('ANSICON')) {
-                $width = \preg_replace('{^(\d+)x.*$}', '$1', $ansicon);
-            }
-            // @codeCoverageIgnoreEnd
-
-            if (\preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
+            if (false === $width and 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
                 $width = $match[2];
             }
 

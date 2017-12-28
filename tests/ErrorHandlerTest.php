@@ -7,6 +7,7 @@ namespace SlamTest\ErrorHandler;
 use ErrorException;
 use PHPUnit\Framework\TestCase;
 use Slam\ErrorHandler\ErrorHandler;
+use Symfony\Component\Console\Terminal;
 
 final class ErrorHandlerTest extends TestCase
 {
@@ -36,6 +37,7 @@ final class ErrorHandlerTest extends TestCase
 
     protected function tearDown()
     {
+        \putenv('COLUMNS');
         \ini_set('error_log', $this->backupErrorLog);
         @\unlink($this->errorLog);
     }
@@ -223,5 +225,24 @@ final class ErrorHandlerTest extends TestCase
         $message = \current($this->emailsSent);
 
         $this->assertContains($username, $message['subject']);
+    }
+
+    public function testTerminalWidthByEnv()
+    {
+        $width = \mt_rand(1000, 9000);
+        \putenv(\sprintf('COLUMNS=%s', $width));
+
+        $errorHandler = new ErrorHandler(function () {
+        });
+
+        $this->assertSame($width, $errorHandler->getTerminalWidth());
+
+        \putenv('COLUMNS');
+
+        $errorHandler = new ErrorHandler(function () {
+        });
+
+        $terminal = new Terminal();
+        $this->assertSame($terminal->getWidth(), $errorHandler->getTerminalWidth());
     }
 }
