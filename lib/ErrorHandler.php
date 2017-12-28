@@ -16,6 +16,7 @@ final class ErrorHandler
     private $logErrors;
     private $logVariables = true;
     private $emailCallback;
+    private $scream = array();
 
     private static $colors = array(
         '<error>'   => "\033[37;41m",
@@ -132,6 +133,16 @@ final class ErrorHandler
         return $this->logVariables;
     }
 
+    public function setScreamSilencesErrors(array $scream): void
+    {
+        $this->scream = $scream;
+    }
+
+    public function getScreamSilencesErrors(): array
+    {
+        return $this->scream;
+    }
+
     public function register(): void
     {
         \set_error_handler(array($this, 'errorHandler'), \error_reporting());
@@ -141,7 +152,7 @@ final class ErrorHandler
     public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0): void
     {
         // Mandatory check for @ operator
-        if (0 === \error_reporting()) {
+        if (0 === \error_reporting() and ! isset($this->scream[$errno])) {
             return;
         }
 

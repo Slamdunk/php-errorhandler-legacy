@@ -84,6 +84,31 @@ final class ErrorHandlerTest extends TestCase
         $arrayPerVerificaErrori['undefined_index'];
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testScream()
+    {
+        $scream = array(
+            \E_USER_WARNING => true,
+        );
+
+        $this->assertEmpty($this->errorHandler->getScreamSilencesErrors());
+        $this->errorHandler->setScreamSilencesErrors($scream);
+        $this->assertSame($scream, $this->errorHandler->getScreamSilencesErrors());
+
+        $this->errorHandler->register();
+
+        @ \trigger_error(\uniqid('deprecated_'), \E_USER_DEPRECATED);
+
+        $warningMessage = \uniqid('warning_');
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessageRegexp(\sprintf('/%s/', \preg_quote($warningMessage)));
+
+        @ \trigger_error($warningMessage, \E_USER_WARNING);
+    }
+
     public function testHandleCliException()
     {
         $memoryStream = \fopen('php://memory', 'r+');
