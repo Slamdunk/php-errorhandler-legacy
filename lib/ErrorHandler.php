@@ -133,12 +133,12 @@ final class ErrorHandler
         return $this->logVariables;
     }
 
-    public function setScreamSilencesErrors(array $scream): void
+    public function setScreamSilencedErrors(array $scream): void
     {
         $this->scream = $scream;
     }
 
-    public function getScreamSilencesErrors(): array
+    public function getScreamSilencedErrors(): array
     {
         return $this->scream;
     }

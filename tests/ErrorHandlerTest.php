@@ -94,9 +94,9 @@ final class ErrorHandlerTest extends TestCase
             \E_USER_WARNING => true,
         );
 
-        $this->assertEmpty($this->errorHandler->getScreamSilencesErrors());
-        $this->errorHandler->setScreamSilencesErrors($scream);
-        $this->assertSame($scream, $this->errorHandler->getScreamSilencesErrors());
+        $this->assertEmpty($this->errorHandler->getScreamSilencedErrors());
+        $this->errorHandler->setScreamSilencedErrors($scream);
+        $this->assertSame($scream, $this->errorHandler->getScreamSilencedErrors());
 
         $this->errorHandler->register();
 
