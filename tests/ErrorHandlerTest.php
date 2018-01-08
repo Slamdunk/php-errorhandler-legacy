@@ -23,12 +23,12 @@ final class ErrorHandlerTest extends TestCase
         \ini_set('error_log', $this->errorLog);
 
         $this->exception = new ErrorException(\uniqid('normal_'), \E_USER_NOTICE);
-        $this->emailsSent = array();
+        $this->emailsSent = [];
         $this->errorHandler = new ErrorHandler(function ($subject, $body) {
-            $this->emailsSent[] = array(
+            $this->emailsSent[] = [
                 'subject' => $subject,
                 'body' => $body,
-            );
+            ];
         });
 
         $this->errorHandler->setAutoExit(false);
@@ -76,7 +76,7 @@ final class ErrorHandlerTest extends TestCase
     public function testRegisterBuiltinHandlers()
     {
         $this->errorHandler->register();
-        $arrayPerVerificaErrori = array();
+        $arrayPerVerificaErrori = [];
 
         @ $arrayPerVerificaErrori['no_exception_thrown_on_undefined_index_now'];
 
@@ -90,9 +90,9 @@ final class ErrorHandlerTest extends TestCase
      */
     public function testScream()
     {
-        $scream = array(
+        $scream = [
             \E_USER_WARNING => true,
-        );
+        ];
 
         $this->assertEmpty($this->errorHandler->getScreamSilencedErrors());
         $this->errorHandler->setScreamSilencedErrors($scream);
@@ -184,8 +184,8 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setLogErrors(true);
 
         $key = \uniqid(__FUNCTION__);
-        $_SESSION = array($key => \uniqid());
-        $_POST = array($key => \uniqid());
+        $_SESSION = [$key => \uniqid()];
+        $_POST = [$key => \uniqid()];
 
         $this->errorHandler->emailException($this->exception);
 
@@ -208,8 +208,8 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setLogErrors(true);
 
         $key = \uniqid(__FUNCTION__);
-        $_SESSION = array($key => \uniqid());
-        $_POST = array($key => \uniqid());
+        $_SESSION = [$key => \uniqid()];
+        $_POST = [$key => \uniqid()];
 
         $this->errorHandler->emailException($this->exception);
 
@@ -242,7 +242,7 @@ final class ErrorHandlerTest extends TestCase
     public function testUsernameInEmailSubject()
     {
         $username = \uniqid('bob_');
-        $_SESSION = array('custom_username_key' => $username);
+        $_SESSION = ['custom_username_key' => $username];
 
         $this->errorHandler->setLogErrors(true);
         $this->errorHandler->emailException($this->exception);

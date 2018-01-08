@@ -16,14 +16,14 @@ final class ErrorHandler
     private $logErrors;
     private $logVariables = true;
     private $emailCallback;
-    private $scream = array();
+    private $scream = [];
 
-    private static $colors = array(
+    private static $colors = [
         '<error>'   => "\033[37;41m",
         '</error>'  => "\033[0m",
-    );
+    ];
 
-    private static $errors = array(
+    private static $errors = [
         \E_COMPILE_ERROR        => 'E_COMPILE_ERROR',
         \E_COMPILE_WARNING      => 'E_COMPILE_WARNING',
         \E_CORE_ERROR           => 'E_CORE_ERROR',
@@ -39,7 +39,7 @@ final class ErrorHandler
         \E_USER_NOTICE          => 'E_USER_NOTICE',
         \E_USER_WARNING         => 'E_USER_WARNING',
         \E_WARNING              => 'E_WARNING',
-    );
+    ];
 
     public function __construct(callable $emailCallback)
     {
@@ -145,8 +145,8 @@ final class ErrorHandler
 
     public function register(): void
     {
-        \set_error_handler(array($this, 'errorHandler'), \error_reporting());
-        \set_exception_handler(array($this, 'exceptionHandler'));
+        \set_error_handler([$this, 'errorHandler'], \error_reporting());
+        \set_exception_handler([$this, 'exceptionHandler']);
     }
 
     public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0): void
@@ -168,13 +168,13 @@ final class ErrorHandler
             $currentEx = $exception;
             do {
                 $width = $this->getTerminalWidth() ? $this->getTerminalWidth() - 3 : 120;
-                $lines = array(
+                $lines = [
                     'Message: ' . $currentEx->getMessage(),
                     '',
                     'Class: ' . \get_class($currentEx),
                     'Code: ' . $this->getExceptionCode($currentEx),
                     'File: ' . $currentEx->getFile() . ':' . $currentEx->getLine(),
-                );
+                ];
                 $lines = \array_merge($lines, \explode(\PHP_EOL, $this->purgeTrace($currentEx->getTraceAsString())));
 
                 $i = 0;
@@ -286,18 +286,18 @@ final class ErrorHandler
             return;
         }
 
-        $bodyArray = array(
+        $bodyArray = [
             'Data'          => \date(\DATE_RFC850),
             'REQUEST_URI'   => $_SERVER['REQUEST_URI'] ?? '',
             'HTTP_REFERER'  => $_SERVER['HTTP_REFERER'] ?? '',
             'USER_AGENT'    => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'REMOTE_ADDR'   => $_SERVER['REMOTE_ADDR'] ?? '',
-        );
+        ];
         if ($this->isCli()) {
-            $bodyArray = array(
+            $bodyArray = [
                 'Data'      => \date(\DATE_RFC850),
                 'Comando'   => \sprintf('$ php %s', \implode(' ', $_SERVER['argv'])),
-            );
+            ];
         }
 
         $bodyText = '';
@@ -307,12 +307,12 @@ final class ErrorHandler
 
         $currentEx = $exception;
         do {
-            $bodyArray = array(
+            $bodyArray = [
                 'Class'     => \get_class($currentEx),
                 'Code'      => $this->getExceptionCode($currentEx),
                 'Message'   => $currentEx->getMessage(),
                 'File'      => $currentEx->getFile() . ':' . $currentEx->getLine(),
-            );
+            ];
 
             foreach ($bodyArray as $key => $val) {
                 $bodyText .= \sprintf('%-15s%s%s', $key, $val, \PHP_EOL);
