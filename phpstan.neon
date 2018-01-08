@@ -1,0 +1,11 @@
+includes:
+    - vendor/phpstan/phpstan/conf/config.levelmax.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/slam/phpstan-extensions/conf/slam-rules.neon
+    - vendor/slam/phpstan-extensions/conf/thecodingmachine-rules.neon
+
+parameters:
+    ignoreErrors:
+        - '#Class Doctrine\\Common\\Util\\Debug not found#'
+        - '#Call to static method export\(\) on an unknown class Doctrine\\Common\\Util\\Debug#'
+        - '#Constant ROOT_PATH not found#'

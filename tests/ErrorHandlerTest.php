@@ -13,6 +13,9 @@ final class ErrorHandlerTest extends TestCase
 {
     private $backupErrorLog;
     private $errorLog;
+    private $exception;
+    private $emailsSent;
+    private $errorHandler;
 
     protected function setUp()
     {
@@ -104,7 +107,7 @@ final class ErrorHandlerTest extends TestCase
 
         $warningMessage = \uniqid('warning_');
         $this->expectException(ErrorException::class);
-        $this->expectExceptionMessageRegexp(\sprintf('/%s/', \preg_quote($warningMessage)));
+        $this->expectExceptionMessageRegExp(\sprintf('/%s/', \preg_quote($warningMessage)));
 
         @ \trigger_error($warningMessage, \E_USER_WARNING);
     }
