@@ -80,7 +80,7 @@ final class ErrorHandler
         if (null === $this->terminalWidth) {
             $width = \getenv('COLUMNS');
 
-            if (false === $width and 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
+            if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
                 $width = $match[2];
             }
 
@@ -97,7 +97,7 @@ final class ErrorHandler
         }
 
         $this->errorOutputStream = $errorOutputStream;
-        $this->hasColorSupport = (\function_exists('posix_isatty') and @\posix_isatty($errorOutputStream));
+        $this->hasColorSupport   = (\function_exists('posix_isatty') && @\posix_isatty($errorOutputStream));
     }
 
     public function getErrorOutputStream()
@@ -152,7 +152,7 @@ final class ErrorHandler
     public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0): void
     {
         // Mandatory check for @ operator
-        if (0 === \error_reporting() and ! isset($this->scream[$errno])) {
+        if (0 === \error_reporting() && ! isset($this->scream[$errno])) {
             return;
         }
 
@@ -183,12 +183,12 @@ final class ErrorHandler
 
                     if (isset($line[$width])) {
                         $lines[$i] = \mb_substr($line, 0, $width);
-                        if (isset($line[0]) and '#' !== $line[0]) {
+                        if (isset($line[0]) && '#' !== $line[0]) {
                             \array_splice($lines, $i + 1, 0, '   ' . \mb_substr($line, $width));
                         }
                     }
 
-                    $i += 1;
+                    ++$i;
                 }
 
                 $this->outputError(\PHP_EOL);
@@ -215,7 +215,7 @@ final class ErrorHandler
         }
         // @codeCoverageIgnoreEnd
 
-        $ajax = (isset($_SERVER) and isset($_SERVER['X_REQUESTED_WITH']) and 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
+        $ajax   = (isset($_SERVER) && isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
         $output = '';
         if (! $ajax) {
             $output .= '<!DOCTYPE html><html><head><title>500: Errore interno</title></head><body>';
@@ -324,16 +324,16 @@ final class ErrorHandler
         $username = null;
 
         if ($this->logVariables()) {
-            if (isset($_POST) and ! empty($_POST)) {
+            if (isset($_POST) && ! empty($_POST)) {
                 $bodyText .= '$_POST = ' . \print_r($_POST, true) . \PHP_EOL;
             }
-            if (isset($_SESSION) and ! empty($_SESSION)) {
+            if (isset($_SESSION) && ! empty($_SESSION)) {
                 $sessionText = \print_r(\class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true);
                 $bodyText .= '$_SESSION = ' . $sessionText . \PHP_EOL;
 
-                $count = 0;
+                $count    = 0;
                 $username = \preg_replace('/.+\[([^\]]+)?username([^\]]+)?\] => ([\w\-\.]+).+/s', '\3', $sessionText, -1, $count);
-                if (! isset($username[0]) or isset($username[255]) or 1 !== $count) {
+                if (! isset($username[0]) || isset($username[255]) || 1 !== $count) {
                     $username = null;
                 }
             }
@@ -356,7 +356,7 @@ final class ErrorHandler
     private function getExceptionCode(\Throwable $exception): string
     {
         $code = $exception->getCode();
-        if ($exception instanceof \ErrorException and isset(static::$errors[$code])) {
+        if ($exception instanceof \ErrorException && isset(static::$errors[$code])) {
             $code = static::$errors[$code];
         }
 

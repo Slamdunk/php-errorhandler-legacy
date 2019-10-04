@@ -5,7 +5,13 @@ includes:
     - vendor/slam/phpstan-extensions/conf/thecodingmachine-rules.neon
 
 parameters:
+    paths:
+        - lib/
+        - tests/
     ignoreErrors:
         - '#Class Doctrine\\Common\\Util\\Debug not found#'
         - '#Call to static method export\(\) on an unknown class Doctrine\\Common\\Util\\Debug#'
-        - '#Constant ROOT_PATH not found#'
+        - '#Function \w+ is unsafe to use, rely on .+ instead#'
+        - '#Variable \$_\w+ in isset\(\) always exists and is not nullable#'
+        - '#Parameter \#1 \$error_handler of function set_error_handler expects#'
+        - '#Offset .(no_exception_thrown.*|undefined_index). does not exist on array#'
