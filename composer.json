@@ -21,7 +21,7 @@
         "slam/php-cs-fixer-extensions": "^1.19",
         "slam/php-debug-r": "^1.6",
         "slam/phpstan-extensions": "^4.0",
-        "symfony/console": "^4.3",
+        "symfony/console": "^5.0",
         "thecodingmachine/phpstan-strict-rules": "^0.12"
     },
     "autoload": {
