@@ -1,5 +1,5 @@
 includes:
-    - vendor/phpstan/phpstan/conf/config.levelmax.neon
+    - phar://phpstan.phar/conf/config.levelmax.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/slam/phpstan-extensions/conf/slam-rules.neon
     - vendor/slam/phpstan-extensions/conf/thecodingmachine-rules.neon
@@ -15,3 +15,4 @@ parameters:
         - '#Variable \$_\w+ in isset\(\) always exists and is not nullable#'
         - '#Parameter \#1 \$error_handler of function set_error_handler expects#'
         - '#Offset .(no_exception_thrown.*|undefined_index). does not exist on array#'
+        - '#Expression .+arrayPerVerificaErrori.+ on a separate line does not do anything#'

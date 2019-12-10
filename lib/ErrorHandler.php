@@ -5,24 +5,67 @@ declare(strict_types=1);
 namespace Slam\ErrorHandler;
 
 use Doctrine\Common\Util\Debug as DoctrineDebug;
+use ErrorException;
+use Throwable;
 
 final class ErrorHandler
 {
+    /**
+     * @var bool
+     */
     private $autoExit = true;
+
+    /**
+     * @var null|bool
+     */
     private $cli;
+
+    /**
+     * @var null|int
+     */
     private $terminalWidth;
+
+    /**
+     * @var null|resource
+     */
     private $errorOutputStream;
+
+    /**
+     * @var bool
+     */
     private $hasColorSupport = false;
+
+    /**
+     * @var null|bool
+     */
     private $logErrors;
+
+    /**
+     * @var bool
+     */
     private $logVariables = true;
+
+    /**
+     * @var callable
+     */
     private $emailCallback;
+
+    /**
+     * @var array<int, bool>
+     */
     private $scream = [];
 
+    /**
+     * @var array<string, string>
+     */
     private static $colors = [
         '<error>'   => "\033[37;41m",
         '</error>'  => "\033[0m",
     ];
 
+    /**
+     * @var array<int, string>
+     */
     private static $errors = [
         \E_COMPILE_ERROR        => 'E_COMPILE_ERROR',
         \E_COMPILE_WARNING      => 'E_COMPILE_WARNING',
@@ -65,6 +108,7 @@ final class ErrorHandler
     {
         if (null === $this->cli) {
             $this->setCli(\PHP_SAPI === 'cli');
+            \assert(null !== $this->cli);
         }
 
         return $this->cli;
@@ -85,11 +129,15 @@ final class ErrorHandler
             }
 
             $this->setTerminalWidth((int) $width ?: 80);
+            \assert(null !== $this->terminalWidth);
         }
 
         return $this->terminalWidth;
     }
 
+    /**
+     * @param mixed $errorOutputStream
+     */
     public function setErrorOutputStream($errorOutputStream): void
     {
         if (! \is_resource($errorOutputStream)) {
@@ -100,10 +148,14 @@ final class ErrorHandler
         $this->hasColorSupport   = (\function_exists('posix_isatty') && @\posix_isatty($errorOutputStream));
     }
 
+    /**
+     * @return resource
+     */
     public function getErrorOutputStream()
     {
         if (null === $this->errorOutputStream) {
             $this->setErrorOutputStream(\STDERR);
+            \assert(null !== $this->errorOutputStream);
         }
 
         return $this->errorOutputStream;
@@ -118,6 +170,7 @@ final class ErrorHandler
     {
         if (null === $this->logErrors) {
             $this->setLogErrors(! \interface_exists(\PHPUnit\Framework\Test::class));
+            \assert(null !== $this->logErrors);
         }
 
         return $this->logErrors;
@@ -133,11 +186,17 @@ final class ErrorHandler
         return $this->logVariables;
     }
 
+    /**
+     * @param array<int, bool> $scream
+     */
     public function setScreamSilencedErrors(array $scream): void
     {
         $this->scream = $scream;
     }
 
+    /**
+     * @return array<int, bool>
+     */
     public function getScreamSilencedErrors(): array
     {
         return $this->scream;
@@ -149,6 +208,12 @@ final class ErrorHandler
         \set_exception_handler([$this, 'exceptionHandler']);
     }
 
+    /**
+     * @param int    $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param int    $errline
+     */
     public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0): void
     {
         // Mandatory check for @ operator
@@ -156,10 +221,10 @@ final class ErrorHandler
             return;
         }
 
-        throw new \ErrorException($errstr, $errno, $errno, $errfile, $errline);
+        throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
     }
 
-    public function exceptionHandler(\Throwable $exception): void
+    public function exceptionHandler(Throwable $exception): void
     {
         $this->logException($exception);
         $this->emailException($exception);
@@ -256,7 +321,7 @@ final class ErrorHandler
         \fwrite($this->getErrorOutputStream(), \str_replace(\array_keys(self::$colors), $this->hasColorSupport ? \array_values(self::$colors) : '', $text) . \PHP_EOL);
     }
 
-    public function logException(\Throwable $exception): void
+    public function logException(Throwable $exception): void
     {
         if (! $this->logErrors()) {
             return;
@@ -280,7 +345,7 @@ final class ErrorHandler
         } while ($exception = $exception->getPrevious());
     }
 
-    public function emailException(\Throwable $exception): void
+    public function emailException(Throwable $exception): void
     {
         if (! $this->logErrors()) {
             return;
@@ -348,16 +413,16 @@ final class ErrorHandler
 
         try {
             $callback($subject, $bodyText);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logException($e);
         }
     }
 
-    private function getExceptionCode(\Throwable $exception): string
+    private function getExceptionCode(Throwable $exception): string
     {
         $code = $exception->getCode();
-        if ($exception instanceof \ErrorException && isset(static::$errors[$code])) {
-            $code = static::$errors[$code];
+        if ($exception instanceof ErrorException && isset(self::$errors[$code])) {
+            $code = self::$errors[$code];
         }
 
         return (string) $code;
