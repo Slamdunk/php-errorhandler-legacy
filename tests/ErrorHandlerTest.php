@@ -17,7 +17,7 @@ final class ErrorHandlerTest extends TestCase
     private $emailsSent;
     private $errorHandler;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         \ini_set('display_errors', (string) false);
         $this->backupErrorLog = \ini_get('error_log');
@@ -27,7 +27,7 @@ final class ErrorHandlerTest extends TestCase
 
         $this->exception    = new ErrorException(\uniqid('normal_'), \E_USER_NOTICE);
         $this->emailsSent   = [];
-        $this->errorHandler = new ErrorHandler(function (string $subject, string $body) {
+        $this->errorHandler = new ErrorHandler(function (string $subject, string $body): void {
             $this->emailsSent[] = [
                 'subject' => $subject,
                 'body'    => $body,
@@ -38,16 +38,16 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setTerminalWidth(50);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         \putenv('COLUMNS');
         \ini_set('error_log', $this->backupErrorLog);
         @\unlink($this->errorLog);
     }
 
-    public function testDefaultConfiguration()
+    public function testDefaultConfiguration(): void
     {
-        $errorHandler = new ErrorHandler(function () {
+        $errorHandler = new ErrorHandler(function (): void {
         });
 
         static::assertTrue($errorHandler->isCli());
@@ -76,7 +76,7 @@ final class ErrorHandlerTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRegisterBuiltinHandlers()
+    public function testRegisterBuiltinHandlers(): void
     {
         $this->errorHandler->register();
         $arrayPerVerificaErrori = [];
@@ -91,7 +91,7 @@ final class ErrorHandlerTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testScream()
+    public function testScream(): void
     {
         $scream = [
             \E_USER_WARNING => true,
@@ -112,7 +112,7 @@ final class ErrorHandlerTest extends TestCase
         @ \trigger_error($warningMessage, \E_USER_WARNING);
     }
 
-    public function testHandleCliException()
+    public function testHandleCliException(): void
     {
         $memoryStream = \fopen('php://memory', 'r+');
         static::assertIsResource($memoryStream);
@@ -122,10 +122,10 @@ final class ErrorHandlerTest extends TestCase
 
         \fseek($memoryStream, 0);
         $output = \stream_get_contents($memoryStream);
-        static::assertContains($this->exception->getMessage(), $output);
+        static::assertStringContainsString($this->exception->getMessage(), $output);
     }
 
-    public function testHandleWebExceptionWithDisplay()
+    public function testHandleWebExceptionWithDisplay(): void
     {
         \ini_set('display_errors', (string) true);
         $this->errorHandler->setCli(false);
@@ -135,13 +135,13 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->exceptionHandler($this->exception);
         $output = \ob_get_clean();
 
-        static::assertContains($this->exception->getMessage(), $output);
+        static::assertStringContainsString($this->exception->getMessage(), $output);
 
         $errorLogContent = \file_get_contents($this->errorLog);
-        static::assertContains($this->exception->getMessage(), $errorLogContent);
+        static::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
 
-    public function testHandleWebExceptionWithoutDisplay()
+    public function testHandleWebExceptionWithoutDisplay(): void
     {
         \ini_set('display_errors', (string) false);
         $this->errorHandler->setCli(false);
@@ -151,13 +151,13 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->exceptionHandler($this->exception);
         $output = \ob_get_clean();
 
-        static::assertNotContains($this->exception->getMessage(), $output);
+        static::assertStringNotContainsString($this->exception->getMessage(), $output);
 
         $errorLogContent = \file_get_contents($this->errorLog);
-        static::assertContains($this->exception->getMessage(), $errorLogContent);
+        static::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
 
-    public function testLogErrorAndException()
+    public function testLogErrorAndException(): void
     {
         $this->errorHandler->setLogErrors(false);
 
@@ -173,11 +173,11 @@ final class ErrorHandlerTest extends TestCase
 
         $errorLogContent = \file_get_contents($this->errorLog);
 
-        static::assertContains($exception->getMessage(), $errorLogContent);
-        static::assertContains($this->exception->getMessage(), $errorLogContent);
+        static::assertStringContainsString($exception->getMessage(), $errorLogContent);
+        static::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
 
-    public function testEmailException()
+    public function testEmailException(): void
     {
         $this->errorHandler->setLogErrors(false);
 
@@ -198,12 +198,12 @@ final class ErrorHandlerTest extends TestCase
         static::assertNotEmpty($message);
 
         $messageText = $message['body'];
-        static::assertContains($this->exception->getMessage(), $messageText);
-        static::assertContains($_SESSION[$key], $messageText);
-        static::assertContains($_POST[$key], $messageText);
+        static::assertStringContainsString($this->exception->getMessage(), $messageText);
+        static::assertStringContainsString($_SESSION[$key], $messageText);
+        static::assertStringContainsString($_POST[$key], $messageText);
     }
 
-    public function testCanHideVariablesFromEmail()
+    public function testCanHideVariablesFromEmail(): void
     {
         static::assertTrue($this->errorHandler->logVariables());
         $this->errorHandler->setLogVariables(false);
@@ -222,15 +222,15 @@ final class ErrorHandlerTest extends TestCase
         static::assertNotEmpty($message);
 
         $messageText = $message['body'];
-        static::assertContains($this->exception->getMessage(), $messageText);
-        static::assertNotContains($_SESSION[$key], $messageText);
-        static::assertNotContains($_POST[$key], $messageText);
+        static::assertStringContainsString($this->exception->getMessage(), $messageText);
+        static::assertStringNotContainsString($_SESSION[$key], $messageText);
+        static::assertStringNotContainsString($_POST[$key], $messageText);
     }
 
-    public function testErroriNellInvioDellaMailVengonoComunqueLoggati()
+    public function testErroriNellInvioDellaMailVengonoComunqueLoggati(): void
     {
         $mailError    = \uniqid('mail_not_sent_');
-        $mailCallback = static function () use ($mailError) {
+        $mailCallback = static function () use ($mailError): void {
             throw new ErrorException($mailError, \E_USER_ERROR);
         };
         $errorHandler = new ErrorHandler($mailCallback);
@@ -239,11 +239,11 @@ final class ErrorHandlerTest extends TestCase
         $errorHandler->emailException($this->exception);
 
         $errorLogContent = \file_get_contents($this->errorLog);
-        static::assertNotContains($this->exception->getMessage(), $errorLogContent);
-        static::assertContains($mailError, $errorLogContent);
+        static::assertStringNotContainsString($this->exception->getMessage(), $errorLogContent);
+        static::assertStringContainsString($mailError, $errorLogContent);
     }
 
-    public function testUsernameInEmailSubject()
+    public function testUsernameInEmailSubject(): void
     {
         $username = \uniqid('bob_');
         $_SESSION = ['custom_username_key' => $username];
@@ -253,22 +253,22 @@ final class ErrorHandlerTest extends TestCase
 
         $message = \current($this->emailsSent);
 
-        static::assertContains($username, $message['subject']);
+        static::assertStringContainsString($username, $message['subject']);
     }
 
-    public function testTerminalWidthByEnv()
+    public function testTerminalWidthByEnv(): void
     {
         $width = \mt_rand(1000, 9000);
         \putenv(\sprintf('COLUMNS=%s', $width));
 
-        $errorHandler = new ErrorHandler(function () {
+        $errorHandler = new ErrorHandler(function (): void {
         });
 
         static::assertSame($width, $errorHandler->getTerminalWidth());
 
         \putenv('COLUMNS');
 
-        $errorHandler = new ErrorHandler(function () {
+        $errorHandler = new ErrorHandler(function (): void {
         });
 
         $terminal = new Terminal();
