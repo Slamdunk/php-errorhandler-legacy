@@ -38,7 +38,6 @@ final class ErrorHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        \ini_set('display_errors', (string) false);
         $this->backupErrorLog = (string) \ini_get('error_log');
         $this->errorLog       = __DIR__ . \DIRECTORY_SEPARATOR . 'error_log_test';
         \touch($this->errorLog);
@@ -145,7 +144,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testHandleWebExceptionWithDisplay(): void
     {
-        \ini_set('display_errors', (string) true);
+        $this->errorHandler->setDisplayErrors(true);
         $this->errorHandler->setCli(false);
         $this->errorHandler->setLogErrors(true);
 
@@ -161,7 +160,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testHandleWebExceptionWithoutDisplay(): void
     {
-        \ini_set('display_errors', (string) false);
+        $this->errorHandler->setDisplayErrors(false);
         $this->errorHandler->setCli(false);
         $this->errorHandler->setLogErrors(true);
 

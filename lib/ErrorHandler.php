@@ -46,6 +46,11 @@ final class ErrorHandler
     private $logVariables = true;
 
     /**
+     * @var null|bool
+     */
+    private $displayErrors;
+
+    /**
      * @var callable
      */
     private $emailCallback;
@@ -186,6 +191,21 @@ final class ErrorHandler
         return $this->logVariables;
     }
 
+    public function setDisplayErrors(bool $displayErrors): void
+    {
+        $this->displayErrors = $displayErrors;
+    }
+
+    public function displayErrors(): bool
+    {
+        if (null === $this->displayErrors) {
+            $this->setDisplayErrors((bool) \ini_get('display_errors'));
+            \assert(null !== $this->displayErrors);
+        }
+
+        return $this->displayErrors;
+    }
+
     /**
      * @param array<int, bool> $scream
      */
@@ -287,7 +307,7 @@ final class ErrorHandler
         }
         $output .= '<h1>500: Errore interno</h1>';
         $output .= \PHP_EOL;
-        if (true === (bool) \ini_get('display_errors')) {
+        if ($this->displayErrors()) {
             $currentEx = $exception;
             do {
                 $output .= \sprintf(
