@@ -300,12 +300,17 @@ final class ErrorHandler
         }
         // @codeCoverageIgnoreEnd
 
+        echo $this->renderHtmlException($exception);
+    }
+
+    public function renderHtmlException(Throwable $exception): string
+    {
         $ajax   = (isset($_SERVER) && isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
         $output = '';
         if (! $ajax) {
-            $output .= '<!DOCTYPE html><html><head><title>500: Errore interno</title></head><body>';
+            $output .= '<!DOCTYPE html><html><head><title>500: Internal Server Error</title></head><body>';
         }
-        $output .= '<h1>500: Errore interno</h1>';
+        $output .= '<h1>500: Internal Server Error</h1>';
         $output .= \PHP_EOL;
         if ($this->displayErrors()) {
             $currentEx = $exception;
@@ -333,7 +338,7 @@ final class ErrorHandler
             $output .= '</body></html>';
         }
 
-        echo $output;
+        return $output;
     }
 
     private function outputError(string $text): void
