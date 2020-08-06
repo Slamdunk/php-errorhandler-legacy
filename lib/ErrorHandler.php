@@ -89,6 +89,11 @@ final class ErrorHandler
         \E_WARNING              => 'E_WARNING',
     ];
 
+    /**
+     * @var array<int, class-string<Throwable>>
+     */
+    private $exceptionsTypesFor404 = [];
+
     public function __construct(callable $emailCallback)
     {
         $this->emailCallback = $emailCallback;
@@ -296,7 +301,11 @@ final class ErrorHandler
 
         // @codeCoverageIgnoreStart
         if (! \headers_sent()) {
-            \header('HTTP/1.1 500 Internal Server Error');
+            $header = 'HTTP/1.1 500 Internal Server Error';
+            if (\in_array(\get_class($exception), $this->exceptionsTypesFor404, true)) {
+                $header = 'HTTP/1.1 404 Not Found';
+            }
+            \header($header);
         }
         // @codeCoverageIgnoreEnd
 
@@ -305,12 +314,16 @@ final class ErrorHandler
 
     public function renderHtmlException(Throwable $exception): string
     {
-        $ajax   = (isset($_SERVER) && isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
-        $output = '';
-        if (! $ajax) {
-            $output .= '<!DOCTYPE html><html><head><title>500: Internal Server Error</title></head><body>';
+        $ajax      = (isset($_SERVER) && isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
+        $output    = '';
+        $errorType = '500: Internal Server Error';
+        if (\in_array(\get_class($exception), $this->exceptionsTypesFor404, true)) {
+            $errorType = '404: Not Found';
         }
-        $output .= '<h1>500: Internal Server Error</h1>';
+        if (! $ajax) {
+            $output .= \sprintf('<!DOCTYPE html><html><head><title>%s</title></head><body>', $errorType);
+        }
+        $output .= \sprintf('<h1>%s</h1>', $errorType);
         $output .= \PHP_EOL;
         if ($this->displayErrors()) {
             $currentEx = $exception;
@@ -456,5 +469,21 @@ final class ErrorHandler
     private function purgeTrace(string $trace): string
     {
         return \defined('ROOT_PATH') ? \str_replace(ROOT_PATH, '.', $trace) : $trace;
+    }
+
+    /**
+     * @param array<int, class-string<Throwable>> $exceptionsTypesFor404
+     */
+    public function set404ExceptionTypes(array $exceptionsTypesFor404): void
+    {
+        $this->exceptionsTypesFor404 = $exceptionsTypesFor404;
+    }
+
+    /**
+     * @return array<int, class-string<Throwable>>
+     */
+    public function get404ExceptionTypes(): array
+    {
+        return $this->exceptionsTypesFor404;
     }
 }

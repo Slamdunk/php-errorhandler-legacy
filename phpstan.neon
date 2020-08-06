@@ -9,8 +9,6 @@ parameters:
         - lib/
         - tests/
     ignoreErrors:
-        - '#Class Doctrine\\Common\\Util\\Debug not found#'
-        - '#Call to static method export\(\) on an unknown class Doctrine\\Common\\Util\\Debug#'
         - '#Function \w+ is unsafe to use, rely on .+ instead#'
         - '#Variable \$_\w+ in isset\(\) always exists and is not nullable#'
         - '#Parameter \#1 \$error_handler of function set_error_handler expects#'
