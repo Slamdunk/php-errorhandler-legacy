@@ -6,6 +6,7 @@ namespace SlamTest\ErrorHandler;
 
 use ErrorException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Slam\ErrorHandler\ErrorHandler;
 use Symfony\Component\Console\Terminal;
 
@@ -124,7 +125,7 @@ final class ErrorHandlerTest extends TestCase
 
         $warningMessage = \uniqid('warning_');
         $this->expectException(ErrorException::class);
-        $this->expectExceptionMessageRegExp(\sprintf('/%s/', \preg_quote($warningMessage)));
+        $this->expectExceptionMessageMatches(\sprintf('/%s/', \preg_quote($warningMessage)));
 
         @ \trigger_error($warningMessage, \E_USER_WARNING);
     }
@@ -290,5 +291,19 @@ final class ErrorHandlerTest extends TestCase
 
         $terminal = new Terminal();
         self::assertSame($terminal->getWidth(), $errorHandler->getTerminalWidth());
+    }
+
+    public function test404SpecificExceptionForHeaders(): void
+    {
+        self::assertEmpty($this->errorHandler->get404ExceptionTypes());
+
+        self::assertStringNotContainsString('404: Not Found', $this->errorHandler->renderHtmlException(new RuntimeException()));
+
+        $exceptionTypes = [RuntimeException::class];
+        $this->errorHandler->set404ExceptionTypes($exceptionTypes);
+
+        self::assertSame($exceptionTypes, $this->errorHandler->get404ExceptionTypes());
+
+        self::assertStringContainsString('404: Not Found', $this->errorHandler->renderHtmlException(new RuntimeException()));
     }
 }
