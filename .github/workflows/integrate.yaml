@@ -48,12 +48,6 @@ jobs:
       - name: "Normalize composer.json"
         run: "composer-normalize --dry-run"
 
-      - name: "Check composer.json explicit dependencies"
-        run: "composer-require-checker check --config-file=$(realpath composer-require-checker.json)"
-
-      - name: "Check composer.json unused dependencies"
-        run: "composer-unused"
-
   tests:
     name: "Tests"
 
@@ -89,7 +83,6 @@ jobs:
           restore-keys: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-
 
       - name: "Install dependencies"
-        if: ${{ matrix.dependencies == 'highest' && matrix.php-version != '8.0' }}
         run: "composer update --no-interaction --no-progress"
 
       - name: "Run tests"
