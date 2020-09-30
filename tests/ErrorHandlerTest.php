@@ -306,4 +306,24 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertStringContainsString('404: Not Found', $this->errorHandler->renderHtmlException(new RuntimeException()));
     }
+
+    public function testCanSetCustomErrorLogCallback(): void
+    {
+        $this->errorHandler->setLogErrors(true);
+        self::assertSame('\\error_log', $this->errorHandler->getErrorLogCallback());
+
+        $data           = [];
+        $customCallback = static function (string $text) use (& $data): void {
+            $data[] = $text;
+        };
+
+        $this->errorHandler->setErrorLogCallback($customCallback);
+
+        self::assertSame($customCallback, $this->errorHandler->getErrorLogCallback());
+
+        $this->errorHandler->logException($this->exception);
+
+        self::assertSame(0, \filesize($this->errorLog));
+        self::assertStringContainsString($this->exception->getMessage(), \var_export($data, true));
+    }
 }

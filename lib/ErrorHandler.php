@@ -56,6 +56,11 @@ final class ErrorHandler
     private $emailCallback;
 
     /**
+     * @var callable
+     */
+    private $errorLogCallback = '\\error_log';
+
+    /**
      * @var array<int, bool>
      */
     private $scream = [];
@@ -97,6 +102,16 @@ final class ErrorHandler
     public function __construct(callable $emailCallback)
     {
         $this->emailCallback = $emailCallback;
+    }
+
+    public function setErrorLogCallback(callable $callback): void
+    {
+        $this->errorLogCallback = $callback;
+    }
+
+    public function getErrorLogCallback(): callable
+    {
+        return $this->errorLogCallback;
     }
 
     public function setAutoExit(bool $autoExit): void
@@ -365,6 +380,8 @@ final class ErrorHandler
             return;
         }
 
+        $errorLogCallback = $this->errorLogCallback;
+
         $i = 0;
         do {
             $output = \sprintf('%s%s: %s in %s:%s%s%s',
@@ -377,7 +394,7 @@ final class ErrorHandler
                 $this->purgeTrace($exception->getTraceAsString())
             );
 
-            \error_log($output);
+            $errorLogCallback($output);
 
             ++$i;
         } while ($exception = $exception->getPrevious());
