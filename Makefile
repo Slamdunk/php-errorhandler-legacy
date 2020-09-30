@@ -15,8 +15,4 @@ static-analysis: vendor
 
 .PHONY: test
 test: vendor
-	vendor/bin/phpunit --coverage-text --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml
-
-#.PHONY: code-coverage
-#code-coverage: test
-#	vendor/bin/infection --threads=$(shell nproc) --coverage=coverage --skip-initial-tests
+	vendor/bin/phpunit --coverage-text

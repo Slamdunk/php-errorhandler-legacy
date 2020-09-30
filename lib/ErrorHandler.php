@@ -135,7 +135,7 @@ final class ErrorHandler
             $width = \getenv('COLUMNS');
 
             if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
-                $width = $match[2];
+                $width = $match[2]; // @codeCoverageIgnore
             }
 
             $this->setTerminalWidth((int) $width ?: 80);
