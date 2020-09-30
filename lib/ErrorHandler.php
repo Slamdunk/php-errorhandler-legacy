@@ -135,7 +135,7 @@ final class ErrorHandler
             $width = \getenv('COLUMNS');
 
             if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
-                $width = $match[2];
+                $width = $match[2]; // @codeCoverageIgnore
             }
 
             $this->setTerminalWidth((int) $width ?: 80);
@@ -272,9 +272,9 @@ final class ErrorHandler
                     $line = $lines[$i];
 
                     if (isset($line[$width])) {
-                        $lines[$i] = \mb_substr($line, 0, $width);
+                        $lines[$i] = \substr($line, 0, $width);
                         if (isset($line[0]) && '#' !== $line[0]) {
-                            \array_splice($lines, $i + 1, 0, '   ' . \mb_substr($line, $width));
+                            \array_splice($lines, $i + 1, 0, '   ' . \substr($line, $width));
                         }
                     }
 
@@ -284,7 +284,7 @@ final class ErrorHandler
                 $this->outputError(\PHP_EOL);
                 $this->outputError(\sprintf('<error> %s </error>', \str_repeat(' ', $width)));
                 foreach ($lines as $line) {
-                    $this->outputError(\sprintf('<error> %s%s </error>', $line, \str_repeat(' ', \max(0, $width - \mb_strlen($line)))));
+                    $this->outputError(\sprintf('<error> %s%s </error>', $line, \str_repeat(' ', \max(0, $width - \strlen($line)))));
                 }
                 $this->outputError(\sprintf('<error> %s </error>', \str_repeat(' ', $width)));
                 $this->outputError(\PHP_EOL);
@@ -314,7 +314,7 @@ final class ErrorHandler
 
     public function renderHtmlException(Throwable $exception): string
     {
-        $ajax      = (isset($_SERVER) && isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
+        $ajax      = (isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
         $output    = '';
         $errorType = '500: Internal Server Error';
         if (\in_array(\get_class($exception), $this->exceptionsTypesFor404, true)) {
@@ -427,7 +427,7 @@ final class ErrorHandler
         $username = null;
 
         if ($this->logVariables()) {
-            if (isset($_POST) && ! empty($_POST)) {
+            if (! empty($_POST)) {
                 $bodyText .= '$_POST = ' . \print_r($_POST, true) . \PHP_EOL;
             }
             if (isset($_SESSION) && ! empty($_SESSION)) {

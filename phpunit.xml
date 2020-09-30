@@ -1,16 +1,16 @@
+<?xml version="1.0"?>
 <phpunit
-    bootstrap="./vendor/autoload.php"
-    backupGlobals="false"
-    backupStaticAttributes="false"
-    colors="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+        bootstrap="./vendor/autoload.php"
+        colors="true"
 >
-    <testsuite name="ErrorHandler">
-        <directory>./tests</directory>
-    </testsuite>
-
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./lib</directory>
-        </whitelist>
-    </filter>
+  <coverage>
+    <include>
+      <directory suffix=".php">./lib</directory>
+    </include>
+  </coverage>
+  <testsuite name="ErrorHandler">
+    <directory>./tests</directory>
+  </testsuite>
 </phpunit>
