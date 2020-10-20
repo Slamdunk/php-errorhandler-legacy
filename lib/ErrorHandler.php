@@ -213,7 +213,7 @@ final class ErrorHandler
     public function errorHandler(int $errno, string $errstr = '', string $errfile = '', int $errline = 0): bool
     {
         // Mandatory check for @ operator
-        if (0 === \error_reporting() && ! isset($this->scream[$errno])) {
+        if (0 === (\error_reporting() & $errno) && ! isset($this->scream[$errno])) {
             return true;
         }
 
