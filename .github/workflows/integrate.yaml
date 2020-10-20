@@ -26,7 +26,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:v1, composer-normalize, composer-require-checker, composer-unused
+          tools: composer-normalize
 
       - name: "Get composer cache directory"
         id: composercache
@@ -56,8 +56,8 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "7.3"
           - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -83,7 +83,12 @@ jobs:
           restore-keys: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-
 
       - name: "Install dependencies"
+        if: ${{ matrix.php-version != '8.0' }}
         run: "composer update --no-interaction --no-progress"
+
+      - name: "Install dependencies PHP 8.0"
+        if: ${{ matrix.php-version == '8.0' }}
+        run: "composer update --no-interaction --no-progress --ignore-platform-reqs"
 
       - name: "Run tests"
         timeout-minutes: 3
@@ -109,7 +114,6 @@ jobs:
           coverage: "pcov"
           php-version: "${{ matrix.php-version }}"
           ini-values: zend.assertions=1
-          tools: composer:v1
 
       - name: "Get composer cache directory"
         id: composercache
@@ -144,7 +148,7 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "7.3"
+          - "7.4"
 
     steps:
       - name: "Checkout"
@@ -155,7 +159,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:v1, cs2pr
+          tools: cs2pr
 
       - name: "Get composer cache directory"
         id: composercache
@@ -193,7 +197,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:v1, cs2pr
+          tools: cs2pr
 
       - name: "Get composer cache directory"
         id: composercache

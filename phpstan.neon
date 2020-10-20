@@ -10,25 +10,17 @@ parameters:
         - tests/
     ignoreErrors:
         -
-            message: "#^Parameter \\#1 \\$error_handler of function set_error_handler expects \\(callable\\(int, string, string, int, array\\)\\: bool\\)\\|null, array\\(\\$this\\(Slam\\\\ErrorHandler\\\\ErrorHandler\\), 'errorHandler'\\) given\\.$#"
-            count: 1
-            path: lib/ErrorHandler.php
-
-        -
             message: "#^Expression \"@\\$arrayPerVerificaErrori\\['no_exception_thrown_on_undefined_index_now'\\]\" on a separate line does not do anything\\.$#"
             count: 1
             path: tests/ErrorHandlerTest.php
-
         -
             message: "#^Offset 'no_exception_thrown…' does not exist on array\\(\\)\\.$#"
             count: 1
             path: tests/ErrorHandlerTest.php
-
         -
             message: "#^Expression \"\\$arrayPerVerificaErrori\\['undefined_index'\\]\" on a separate line does not do anything\\.$#"
             count: 1
             path: tests/ErrorHandlerTest.php
-
         -
             message: "#^Offset 'undefined_index' does not exist on array\\(\\)\\.$#"
             count: 1

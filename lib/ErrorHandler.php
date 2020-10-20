@@ -10,73 +10,12 @@ use Throwable;
 
 final class ErrorHandler
 {
-    /**
-     * @var bool
-     */
-    private $autoExit = true;
-
-    /**
-     * @var null|bool
-     */
-    private $cli;
-
-    /**
-     * @var null|int
-     */
-    private $terminalWidth;
-
-    /**
-     * @var null|resource
-     */
-    private $errorOutputStream;
-
-    /**
-     * @var bool
-     */
-    private $hasColorSupport = false;
-
-    /**
-     * @var null|bool
-     */
-    private $logErrors;
-
-    /**
-     * @var bool
-     */
-    private $logVariables = true;
-
-    /**
-     * @var null|bool
-     */
-    private $displayErrors;
-
-    /**
-     * @var callable
-     */
-    private $emailCallback;
-
-    /**
-     * @var callable
-     */
-    private $errorLogCallback = '\\error_log';
-
-    /**
-     * @var array<int, bool>
-     */
-    private $scream = [];
-
-    /**
-     * @var array<string, string>
-     */
-    private static $colors = [
+    private const COLORS = [
         '<error>'   => "\033[37;41m",
         '</error>'  => "\033[0m",
     ];
 
-    /**
-     * @var array<int, string>
-     */
-    private static $errors = [
+    private const ERRORS = [
         \E_COMPILE_ERROR        => 'E_COMPILE_ERROR',
         \E_COMPILE_WARNING      => 'E_COMPILE_WARNING',
         \E_CORE_ERROR           => 'E_CORE_ERROR',
@@ -94,10 +33,33 @@ final class ErrorHandler
         \E_WARNING              => 'E_WARNING',
     ];
 
+    private bool $autoExit      = true;
+    private ?bool $cli          = null;
+    private ?int $terminalWidth = null;
+    /**
+     * @var null|resource
+     */
+    private $errorOutputStream;
+    private bool $hasColorSupport = false;
+    private ?bool $logErrors      = null;
+    private bool $logVariables    = true;
+    private ?bool $displayErrors  = null;
+    /**
+     * @var callable
+     */
+    private $emailCallback;
+    /**
+     * @var callable
+     */
+    private $errorLogCallback = '\\error_log';
+    /**
+     * @var array<int, bool>
+     */
+    private array $scream = [];
     /**
      * @var array<int, class-string<Throwable>>
      */
-    private $exceptionsTypesFor404 = [];
+    private array $exceptionsTypesFor404 = [];
 
     public function __construct(callable $emailCallback)
     {
@@ -248,17 +210,11 @@ final class ErrorHandler
         \set_exception_handler([$this, 'exceptionHandler']);
     }
 
-    /**
-     * @param int    $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param int    $errline
-     */
-    public function errorHandler($errno, $errstr = '', $errfile = '', $errline = 0): void
+    public function errorHandler(int $errno, string $errstr = '', string $errfile = '', int $errline = 0): bool
     {
         // Mandatory check for @ operator
-        if (0 === \error_reporting() && ! isset($this->scream[$errno])) {
-            return;
+        if (0 === (\error_reporting() & $errno) && ! isset($this->scream[$errno])) {
+            return true;
         }
 
         throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
@@ -371,7 +327,11 @@ final class ErrorHandler
 
     private function outputError(string $text): void
     {
-        \fwrite($this->getErrorOutputStream(), \str_replace(\array_keys(self::$colors), $this->hasColorSupport ? \array_values(self::$colors) : '', $text) . \PHP_EOL);
+        \fwrite($this->getErrorOutputStream(), \str_replace(
+            \array_keys(self::COLORS),
+            $this->hasColorSupport ? \array_values(self::COLORS) : '',
+            $text
+        ) . \PHP_EOL);
     }
 
     public function logException(Throwable $exception): void
@@ -476,8 +436,8 @@ final class ErrorHandler
     private function getExceptionCode(Throwable $exception): string
     {
         $code = $exception->getCode();
-        if ($exception instanceof ErrorException && isset(self::$errors[$code])) {
-            $code = self::$errors[$code];
+        if ($exception instanceof ErrorException && isset(self::ERRORS[$code])) {
+            $code = self::ERRORS[$code];
         }
 
         return (string) $code;

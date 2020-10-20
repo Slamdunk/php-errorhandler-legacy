@@ -1,7 +1,7 @@
 all: csfix static-analysis test
 	@echo "Done."
 
-vendor: composer.json composer.lock
+vendor: composer.json
 	composer update
 	touch vendor
 
@@ -15,4 +15,4 @@ static-analysis: vendor
 
 .PHONY: test
 test: vendor
-	vendor/bin/phpunit --coverage-text
+	php -d zend.assertions=1 vendor/bin/phpunit
