@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - "master"
+  schedule:
+    - cron: '0 3 1-7 * 1'
 
 jobs:
   composer-json-lint:
@@ -26,7 +28,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer-normalize
+          tools: composer-normalize, composer-require-checker, composer-unused
 
       - name: "Get composer cache directory"
         id: composercache
@@ -48,6 +50,12 @@ jobs:
       - name: "Normalize composer.json"
         run: "composer-normalize --dry-run"
 
+      - name: "Check composer.json explicit dependencies"
+        run: "composer-require-checker check --config-file=$(realpath composer-require-checker.json)"
+
+      - name: "Check composer.json unused dependencies"
+        run: "composer-unused"
+
   tests:
     name: "Tests"
 
@@ -66,10 +74,9 @@ jobs:
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
-          coverage: "pcov"
+          coverage: "none"
           php-version: "${{ matrix.php-version }}"
           ini-values: zend.assertions=1
-          tools: composer:v1
 
       - name: "Get composer cache directory"
         id: composercache
@@ -131,7 +138,7 @@ jobs:
 
       - name: "Run tests"
         timeout-minutes: 3
-        run: "vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml"
+        run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
 
       - name: "Send code coverage report to Codecov.io"
         uses: codecov/codecov-action@v1
