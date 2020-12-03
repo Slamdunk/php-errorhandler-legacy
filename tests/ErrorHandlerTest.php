@@ -213,7 +213,7 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertNotEmpty($this->emailsSent);
         $message = \current($this->emailsSent);
-        self::assertNotEmpty($message);
+        self::assertNotFalse($message);
 
         $messageText = $message['body'];
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
@@ -237,7 +237,7 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertNotEmpty($this->emailsSent);
         $message = \current($this->emailsSent);
-        self::assertNotEmpty($message);
+        self::assertNotFalse($message);
 
         $messageText = $message['body'];
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
@@ -270,6 +270,7 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->emailException($this->exception);
 
         $message = \current($this->emailsSent);
+        self::assertNotFalse($message);
 
         self::assertStringContainsString($username, $message['subject']);
     }
