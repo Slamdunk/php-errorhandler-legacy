@@ -111,7 +111,7 @@ final class ErrorHandler
         if (null === $this->terminalWidth) {
             $width = \getenv('COLUMNS');
 
-            if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', \exec('stty -a 2> /dev/null | grep columns'), $match)) {
+            if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', (string) \exec('stty -a 2> /dev/null | grep columns'), $match)) {
                 $width = $match[2]; // @codeCoverageIgnore
             }
 
@@ -344,7 +344,8 @@ final class ErrorHandler
 
         $i = 0;
         do {
-            $output = \sprintf('%s%s: %s in %s:%s%s%s',
+            $output = \sprintf(
+                '%s%s: %s in %s:%s%s%s',
                 ($i > 0 ? '{PR ' . $i . '} ' : ''),
                 \get_class($exception),
                 $exception->getMessage(),
@@ -419,7 +420,8 @@ final class ErrorHandler
             }
         }
 
-        $subject = \sprintf('Error%s: %s',
+        $subject = \sprintf(
+            'Error%s: %s',
             $username ? \sprintf(' [%s]', $username) : '',
             $exception->getMessage()
         );
