@@ -12,30 +12,18 @@ use Symfony\Component\Console\Terminal;
 
 final class ErrorHandlerTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $backupErrorLog;
+    private string $backupErrorLog;
 
-    /**
-     * @var string
-     */
-    private $errorLog;
+    private string $errorLog;
 
-    /**
-     * @var ErrorException
-     */
-    private $exception;
+    private ErrorException $exception;
 
     /**
      * @var array<int, array<string, string>>
      */
-    private $emailsSent = [];
+    private array $emailsSent = [];
 
-    /**
-     * @var ErrorHandler
-     */
-    private $errorHandler;
+    private ErrorHandler $errorHandler;
 
     protected function setUp(): void
     {
