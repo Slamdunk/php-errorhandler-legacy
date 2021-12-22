@@ -1,26 +1,10 @@
 includes:
-    - phar://phpstan.phar/conf/config.levelmax.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/slam/phpstan-extensions/conf/slam-rules.neon
+    - phpstan-baseline.neon
 
 parameters:
+    level: max
     paths:
         - lib/
         - tests/
-    ignoreErrors:
-        -
-            message: "#^Expression \"@\\$arrayPerVerificaErrori\\['no_exception_thrown_on_undefined_index_now'\\]\" on a separate line does not do anything\\.$#"
-            count: 1
-            path: tests/ErrorHandlerTest.php
-        -
-            message: "#^Offset 'no_exception_thrown…' does not exist on array\\(\\)\\.$#"
-            count: 1
-            path: tests/ErrorHandlerTest.php
-        -
-            message: "#^Expression \"\\$arrayPerVerificaErrori\\['undefined_index'\\]\" on a separate line does not do anything\\.$#"
-            count: 1
-            path: tests/ErrorHandlerTest.php
-        -
-            message: "#^Offset 'undefined_index' does not exist on array\\(\\)\\.$#"
-            count: 1
-            path: tests/ErrorHandlerTest.php

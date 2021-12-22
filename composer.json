@@ -11,17 +11,17 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0"
+        "php": "~8.0.0 || ~8.1.0"
     },
     "require-dev": {
         "malukenho/mcbumpface": "^1.1.5",
-        "phpstan/phpstan": "^0.12.86",
-        "phpstan/phpstan-phpunit": "^0.12.18",
-        "phpunit/phpunit": "^9.5.4",
-        "slam/php-cs-fixer-extensions": "^3.0.1",
+        "phpstan/phpstan": "^1.2.0",
+        "phpstan/phpstan-phpunit": "^1.0.0",
+        "phpunit/phpunit": "^9.5.10",
+        "slam/php-cs-fixer-extensions": "^3.1.0",
         "slam/php-debug-r": "^1.7.0",
-        "slam/phpstan-extensions": "^5.1.0",
-        "symfony/console": "^5.2.7"
+        "slam/phpstan-extensions": "^6.0.0",
+        "symfony/console": "^6.0.1"
     },
     "extra": {
         "mc-bumpface": {

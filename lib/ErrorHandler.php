@@ -368,7 +368,7 @@ final class ErrorHandler
         }
 
         $bodyArray = [
-            'Data'          => \date(\DATE_RFC850),
+            'Date'          => \date(\DATE_RFC850),
             'REQUEST_URI'   => $_SERVER['REQUEST_URI'] ?? '',
             'HTTP_REFERER'  => $_SERVER['HTTP_REFERER'] ?? '',
             'USER_AGENT'    => $_SERVER['HTTP_USER_AGENT'] ?? '',
@@ -376,8 +376,8 @@ final class ErrorHandler
         ];
         if ($this->isCli()) {
             $bodyArray = [
-                'Data'      => \date(\DATE_RFC850),
-                'Comando'   => \sprintf('$ php %s', \implode(' ', $_SERVER['argv'])),
+                'Date'      => \date(\DATE_RFC850),
+                'Command'   => \sprintf('$ %s %s', \PHP_BINARY, \implode(' ', $_SERVER['argv'])),
             ];
         }
 
