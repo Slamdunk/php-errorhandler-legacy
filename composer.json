@@ -1,8 +1,8 @@
 {
     "name": "slam/php-errorhandler-legacy",
-    "type": "library",
     "description": "Crappy class to manage errors and exceptions",
     "license": "MIT",
+    "type": "library",
     "authors": [
         {
             "name": "Filippo Tessarotto",
@@ -23,11 +23,6 @@
         "slam/phpstan-extensions": "^6.0.0",
         "symfony/console": "^6.0.1"
     },
-    "extra": {
-        "mc-bumpface": {
-            "stripVersionPrefixes": true
-        }
-    },
     "autoload": {
         "psr-4": {
             "Slam\\ErrorHandler\\": "lib/"
@@ -36,6 +31,11 @@
     "autoload-dev": {
         "psr-4": {
             "SlamTest\\ErrorHandler\\": "tests/"
+        }
+    },
+    "extra": {
+        "mc-bumpface": {
+            "stripVersionPrefixes": true
         }
     }
 }
