@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Cannot cast mixed to string\\.$#"
-			count: 1
-			path: lib/ErrorHandler.php
-
-		-
 			message: "#^Expression \"\\$arrayPerVerificaErrori\\['undefined_index'\\]\" on a separate line does not do anything\\.$#"
 			count: 1
 			path: tests/ErrorHandlerTest.php
