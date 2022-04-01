@@ -36,6 +36,7 @@ final class ErrorHandler
     private bool $autoExit      = true;
     private ?bool $cli          = null;
     private ?int $terminalWidth = null;
+
     /**
      * @var null|resource
      */
@@ -44,22 +45,28 @@ final class ErrorHandler
     private ?bool $logErrors      = null;
     private bool $logVariables    = true;
     private ?bool $displayErrors  = null;
+
     /**
      * @var callable
      */
     private $emailCallback;
+
     /**
      * @var callable
      */
     private $errorLogCallback = '\\error_log';
+
     /**
      * @var array<int, bool>
      */
     private array $scream = [];
+
     /**
      * @var array<int, class-string<Throwable>>
      */
     private array $exceptionsTypesFor404 = [];
+
+    private bool $shouldEmail404Exceptions = true;
 
     public function __construct(callable $emailCallback)
     {
@@ -109,13 +116,15 @@ final class ErrorHandler
     public function getTerminalWidth(): int
     {
         if (null === $this->terminalWidth) {
-            $width = \getenv('COLUMNS');
-
-            if (false === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', (string) \exec('stty -a 2> /dev/null | grep columns'), $match)) {
-                $width = $match[2]; // @codeCoverageIgnore
+            $width = (int) \getenv('COLUMNS');
+            if (0 === $width && 1 === \preg_match('{rows.(\d+);.columns.(\d+);}i', (string) \exec('stty -a 2> /dev/null | grep columns'), $match)) {
+                $width = (int) $match[2]; // @codeCoverageIgnore
+            }
+            if (0 === $width) {
+                $width = 80; // @codeCoverageIgnore
             }
 
-            $this->setTerminalWidth((int) $width ?: 80);
+            $this->setTerminalWidth($width);
             \assert(null !== $this->terminalWidth);
         }
 
@@ -228,11 +237,11 @@ final class ErrorHandler
         if ($this->isCli()) {
             $currentEx = $exception;
             do {
-                $width = $this->getTerminalWidth() ? $this->getTerminalWidth() - 3 : 120;
+                $width = 0 !== $this->getTerminalWidth() ? $this->getTerminalWidth() - 3 : 120;
                 $lines = [
                     'Message: ' . $currentEx->getMessage(),
                     '',
-                    'Class: ' . \get_class($currentEx),
+                    'Class: ' . $currentEx::class,
                     'Code: ' . $this->getExceptionCode($currentEx),
                     'File: ' . $currentEx->getFile() . ':' . $currentEx->getLine(),
                 ];
@@ -273,7 +282,7 @@ final class ErrorHandler
         // @codeCoverageIgnoreStart
         if (! \headers_sent()) {
             $header = 'HTTP/1.1 500 Internal Server Error';
-            if (\in_array(\get_class($exception), $this->exceptionsTypesFor404, true)) {
+            if (\in_array($exception::class, $this->exceptionsTypesFor404, true)) {
                 $header = 'HTTP/1.1 404 Not Found';
             }
             \header($header);
@@ -288,7 +297,7 @@ final class ErrorHandler
         $ajax      = (isset($_SERVER['X_REQUESTED_WITH']) && 'XMLHttpRequest' === $_SERVER['X_REQUESTED_WITH']);
         $output    = '';
         $errorType = '500: Internal Server Error';
-        if (\in_array(\get_class($exception), $this->exceptionsTypesFor404, true)) {
+        if (\in_array($exception::class, $this->exceptionsTypesFor404, true)) {
             $errorType = '404: Not Found';
         }
         if (! $ajax) {
@@ -309,7 +318,7 @@ final class ErrorHandler
                         . '<b>Stack trace:</b><pre>%s</pre>'
                     . '</div>%s',
                     \htmlspecialchars($currentEx->getMessage()),
-                    \get_class($currentEx),
+                    $currentEx::class,
                     $this->getExceptionCode($currentEx),
                     $currentEx->getFile(),
                     $currentEx->getLine(),
@@ -347,7 +356,7 @@ final class ErrorHandler
             $output = \sprintf(
                 '%s%s: %s in %s:%s%s%s',
                 ($i > 0 ? '{PR ' . $i . '} ' : ''),
-                \get_class($exception),
+                $exception::class,
                 $exception->getMessage(),
                 $exception->getFile(),
                 $exception->getLine(),
@@ -363,7 +372,13 @@ final class ErrorHandler
 
     public function emailException(Throwable $exception): void
     {
-        if (! $this->logErrors()) {
+        if (
+            ! $this->logErrors()
+            || (
+                ! $this->shouldEmail404Exceptions
+                && \in_array($exception::class, $this->exceptionsTypesFor404, true)
+            )
+        ) {
             return;
         }
 
@@ -389,7 +404,7 @@ final class ErrorHandler
         $currentEx = $exception;
         do {
             $bodyArray = [
-                'Class'     => \get_class($currentEx),
+                'Class'     => $currentEx::class,
                 'Code'      => $this->getExceptionCode($currentEx),
                 'Message'   => $currentEx->getMessage(),
                 'File'      => $currentEx->getFile() . ':' . $currentEx->getLine(),
@@ -405,10 +420,10 @@ final class ErrorHandler
         $username = null;
 
         if ($this->logVariables()) {
-            if (! empty($_POST)) {
+            if ([] !== $_POST) {
                 $bodyText .= '$_POST = ' . \print_r($_POST, true) . \PHP_EOL;
             }
-            if (isset($_SESSION) && ! empty($_SESSION)) {
+            if (isset($_SESSION) && [] !== $_SESSION) {
                 $sessionText = \print_r(\class_exists(DoctrineDebug::class) ? DoctrineDebug::export($_SESSION, 4) : $_SESSION, true);
                 $bodyText .= '$_SESSION = ' . $sessionText . \PHP_EOL;
 
@@ -422,7 +437,7 @@ final class ErrorHandler
 
         $subject = \sprintf(
             'Error%s: %s',
-            $username ? \sprintf(' [%s]', $username) : '',
+            null !== $username ? \sprintf(' [%s]', $username) : '',
             $exception->getMessage()
         );
 
@@ -464,5 +479,15 @@ final class ErrorHandler
     public function get404ExceptionTypes(): array
     {
         return $this->exceptionsTypesFor404;
+    }
+
+    public function setShouldEmail404Exceptions(bool $shouldEmail404Exceptions): void
+    {
+        $this->shouldEmail404Exceptions = $shouldEmail404Exceptions;
+    }
+
+    public function shouldEmail404Exceptions(): bool
+    {
+        return $this->shouldEmail404Exceptions;
     }
 }

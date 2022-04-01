@@ -15,13 +15,13 @@
     },
     "require-dev": {
         "malukenho/mcbumpface": "^1.1.5",
-        "phpstan/phpstan": "^1.2.0",
-        "phpstan/phpstan-phpunit": "^1.0.0",
-        "phpunit/phpunit": "^9.5.10",
+        "phpstan/phpstan": "^1.5.3",
+        "phpstan/phpstan-phpunit": "^1.1.0",
+        "phpstan/phpstan-strict-rules": "^1.1.0",
+        "phpunit/phpunit": "^9.5.19",
         "slam/php-cs-fixer-extensions": "^3.1.0",
         "slam/php-debug-r": "^1.7.0",
-        "slam/phpstan-extensions": "^6.0.0",
-        "symfony/console": "^6.0.1"
+        "symfony/console": "^6.0.5"
     },
     "autoload": {
         "psr-4": {
@@ -31,6 +31,11 @@
     "autoload-dev": {
         "psr-4": {
             "SlamTest\\ErrorHandler\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "malukenho/mcbumpface": true
         }
     },
     "extra": {

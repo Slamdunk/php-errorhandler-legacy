@@ -58,13 +58,13 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertTrue($errorHandler->isCli());
         self::assertTrue($errorHandler->autoExit());
-        self::assertNotNull($errorHandler->getTerminalWidth());
+        self::assertGreaterThan(0, $errorHandler->getTerminalWidth());
         self::assertSame(\STDERR, $errorHandler->getErrorOutputStream());
         self::assertFalse($errorHandler->logErrors());
 
         $errorHandler->setCli(false);
         $errorHandler->setAutoExit(false);
-        $errorHandler->setTerminalWidth($width = \mt_rand(1, 999));
+        $errorHandler->setTerminalWidth($width            = \mt_rand(1, 999));
         $errorHandler->setErrorOutputStream($memoryStream = \fopen('php://memory', 'r+'));
         $errorHandler->setLogErrors(true);
 
@@ -294,6 +294,27 @@ final class ErrorHandlerTest extends TestCase
         self::assertSame($exceptionTypes, $this->errorHandler->get404ExceptionTypes());
 
         self::assertStringContainsString('404: Not Found', $this->errorHandler->renderHtmlException(new RuntimeException()));
+    }
+
+    public function test404ExceptionCanBeDisabledToSendEmail(): void
+    {
+        $this->errorHandler->setLogErrors(true);
+        $exceptionTypes = [RuntimeException::class];
+        $this->errorHandler->set404ExceptionTypes($exceptionTypes);
+
+        self::assertTrue($this->errorHandler->shouldEmail404Exceptions());
+
+        $this->errorHandler->emailException(new RuntimeException());
+
+        self::assertNotEmpty($this->emailsSent);
+        $this->emailsSent = [];
+
+        $this->errorHandler->setShouldEmail404Exceptions(false);
+        self::assertFalse($this->errorHandler->shouldEmail404Exceptions());
+
+        $this->errorHandler->emailException(new RuntimeException());
+
+        self::assertEmpty($this->emailsSent);
     }
 
     public function testCanSetCustomErrorLogCallback(): void
