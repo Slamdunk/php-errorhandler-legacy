@@ -32,8 +32,8 @@ final class ErrorHandlerTest extends TestCase
         \touch($this->errorLog);
         \ini_set('error_log', $this->errorLog);
 
-        $this->exception    = new ErrorException(\uniqid('normal_'), \E_USER_NOTICE);
-        $this->errorHandler = new ErrorHandler(function (string $subject, string $body): void {
+        $this->exception        = new ErrorException(\uniqid('normal_'), \E_USER_NOTICE);
+        $this->errorHandler     = new ErrorHandler(function (string $subject, string $body): void {
             $this->emailsSent[] = [
                 'subject' => $subject,
                 'body'    => $body,
@@ -324,7 +324,7 @@ final class ErrorHandlerTest extends TestCase
 
         $data           = [];
         $customCallback = static function (string $text) use (& $data): void {
-            $data[] = $text;
+            $data[]     = $text;
         };
 
         $this->errorHandler->setErrorLogCallback($customCallback);

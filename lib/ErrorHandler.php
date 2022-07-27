@@ -355,7 +355,7 @@ final class ErrorHandler
         do {
             $output = \sprintf(
                 '%s%s: %s in %s:%s%s%s',
-                ($i > 0 ? '{PR ' . $i . '} ' : ''),
+                $i > 0 ? '{PR ' . $i . '} ' : '',
                 $exception::class,
                 $exception->getMessage(),
                 $exception->getFile(),
@@ -384,10 +384,10 @@ final class ErrorHandler
 
         $bodyArray = [
             'Date'          => \date(\DATE_RFC850),
-            'REQUEST_URI'   => $_SERVER['REQUEST_URI'] ?? '',
-            'HTTP_REFERER'  => $_SERVER['HTTP_REFERER'] ?? '',
+            'REQUEST_URI'   => $_SERVER['REQUEST_URI']     ?? '',
+            'HTTP_REFERER'  => $_SERVER['HTTP_REFERER']    ?? '',
             'USER_AGENT'    => $_SERVER['HTTP_USER_AGENT'] ?? '',
-            'REMOTE_ADDR'   => $_SERVER['REMOTE_ADDR'] ?? '',
+            'REMOTE_ADDR'   => $_SERVER['REMOTE_ADDR']     ?? '',
         ];
         if ($this->isCli()) {
             $bodyArray = [
