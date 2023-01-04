@@ -33,7 +33,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: "Cache dependencies"
-        uses: actions/cache@v3.2.2
+        uses: "actions/cache@v3"
         with:
           path: ${{ steps.composercache.outputs.dir }}
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-${{ hashFiles('**/composer.json') }}
@@ -62,12 +62,12 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.1"
+          - "8.2"
         code-coverage:
-          - "pcov"
-        # include:
-        #   - php-version: "8.1"
-        #     code-coverage: "pcov"
+          - "none"
+        include:
+          - php-version: "8.1"
+            code-coverage: "pcov"
 
 
     steps:
@@ -86,7 +86,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: "Cache dependencies"
-        uses: actions/cache@v3.2.2
+        uses: "actions/cache@v3"
         with:
           path: ${{ steps.composercache.outputs.dir }}
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-${{ hashFiles('**/composer.json') }}
@@ -104,14 +104,6 @@ jobs:
         if: ${{ matrix.code-coverage != 'none' }}
         timeout-minutes: 1
         run: "vendor/bin/phpunit"
-
-      - name: "Send code coverage report to Codecov.io"
-        if: ${{ matrix.code-coverage != 'none' }}
-        uses: codecov/codecov-action@v3.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage/clover.xml
-          fail_ci_if_error: true
 
   coding-standards:
     name: "Coding Standards"
@@ -132,14 +124,13 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: cs2pr
 
       - name: "Get composer cache directory"
         id: composercache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: "Cache dependencies"
-        uses: actions/cache@v3.2.2
+        uses: "actions/cache@v3"
         with:
           path: ${{ steps.composercache.outputs.dir }}
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-${{ hashFiles('**/composer.json') }}
@@ -171,14 +162,13 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           ini-values: zend.assertions=1
-          tools: cs2pr
 
       - name: "Get composer cache directory"
         id: composercache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: "Cache dependencies"
-        uses: actions/cache@v3.2.2
+        uses: "actions/cache@v3"
         with:
           path: ${{ steps.composercache.outputs.dir }}
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-${{ hashFiles('**/composer.json') }}
@@ -188,4 +178,4 @@ jobs:
         run: "composer update --no-interaction --no-progress"
 
       - name: "Run static analysis"
-        run: "vendor/bin/phpstan analyse --no-progress"
+        run: "vendor/bin/phpstan analyse --no-progress --error-format=github"

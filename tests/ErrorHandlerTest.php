@@ -80,6 +80,7 @@ final class ErrorHandlerTest extends TestCase
 
     /**
      * @runInSeparateProcess
+     *
      * @preserveGlobalState disabled
      */
     public function testRegisterBuiltinHandlers(): void
@@ -95,6 +96,7 @@ final class ErrorHandlerTest extends TestCase
 
     /**
      * @runInSeparateProcess
+     *
      * @preserveGlobalState disabled
      */
     public function testScream(): void
@@ -225,7 +227,6 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertNotEmpty($this->emailsSent);
         $message = \current($this->emailsSent);
-        self::assertNotFalse($message);
 
         $messageText = $message['body'];
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
