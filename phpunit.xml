@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<phpunit
+<phpunit 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
         colors="true"
-        verbose="true"
+        cacheDirectory=".phpunit.cache"
 >
   <coverage>
     <include>
       <directory suffix=".php">./lib</directory>
     </include>
     <report>
-      <clover outputFile="coverage/clover.xml" />
-      <html outputDirectory="coverage/html" />
+      <clover outputFile="coverage/clover.xml"/>
+      <html outputDirectory="coverage/html"/>
       <text outputFile="php://stdout" showOnlySummary="true"/>
     </report>
   </coverage>

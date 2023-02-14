@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SlamTest\ErrorHandler;
 
 use ErrorException;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Slam\ErrorHandler\ErrorHandler;
@@ -13,16 +15,13 @@ use Symfony\Component\Console\Terminal;
 final class ErrorHandlerTest extends TestCase
 {
     private string $backupErrorLog;
-
     private string $errorLog;
-
     private ErrorException $exception;
 
     /**
      * @var array<int, array<string, string>>
      */
     private array $emailsSent = [];
-
     private ErrorHandler $errorHandler;
 
     protected function setUp(): void
@@ -78,11 +77,8 @@ final class ErrorHandlerTest extends TestCase
         self::assertSame($memoryStream, $errorHandler->getErrorOutputStream());
     }
 
-    /**
-     * @runInSeparateProcess
-     *
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testRegisterBuiltinHandlers(): void
     {
         $this->errorHandler->register();
@@ -94,11 +90,8 @@ final class ErrorHandlerTest extends TestCase
         $arrayPerVerificaErrori['undefined_index'];
     }
 
-    /**
-     * @runInSeparateProcess
-     *
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testScream(): void
     {
         $scream = [
