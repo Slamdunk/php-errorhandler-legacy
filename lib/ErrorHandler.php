@@ -37,33 +37,23 @@ final class ErrorHandler
     private ?bool $cli          = null;
     private ?int $terminalWidth = null;
 
-    /**
-     * @var null|resource
-     */
+    /** @var null|resource */
     private $errorOutputStream;
     private bool $hasColorSupport = false;
     private ?bool $logErrors      = null;
     private bool $logVariables    = true;
     private ?bool $displayErrors  = null;
 
-    /**
-     * @var callable
-     */
+    /** @var callable */
     private $emailCallback;
 
-    /**
-     * @var callable
-     */
+    /** @var callable */
     private $errorLogCallback = '\\error_log';
 
-    /**
-     * @var array<int, bool>
-     */
+    /** @var array<int, bool> */
     private array $scream = [];
 
-    /**
-     * @var array<int, class-string<Throwable>>
-     */
+    /** @var array<int, class-string<Throwable>> */
     private array $exceptionsTypesFor404 = [];
 
     private bool $shouldEmail404Exceptions = true;
@@ -131,9 +121,7 @@ final class ErrorHandler
         return $this->terminalWidth;
     }
 
-    /**
-     * @param mixed $errorOutputStream
-     */
+    /** @param mixed $errorOutputStream */
     public function setErrorOutputStream($errorOutputStream): void
     {
         if (! \is_resource($errorOutputStream)) {
@@ -144,9 +132,7 @@ final class ErrorHandler
         $this->hasColorSupport   = (\function_exists('posix_isatty') && @\posix_isatty($errorOutputStream));
     }
 
-    /**
-     * @return resource
-     */
+    /** @return resource */
     public function getErrorOutputStream()
     {
         if (null === $this->errorOutputStream) {
@@ -197,17 +183,13 @@ final class ErrorHandler
         return $this->displayErrors;
     }
 
-    /**
-     * @param array<int, bool> $scream
-     */
+    /** @param array<int, bool> $scream */
     public function setScreamSilencedErrors(array $scream): void
     {
         $this->scream = $scream;
     }
 
-    /**
-     * @return array<int, bool>
-     */
+    /** @return array<int, bool> */
     public function getScreamSilencedErrors(): array
     {
         return $this->scream;
@@ -465,17 +447,13 @@ final class ErrorHandler
         return \defined('ROOT_PATH') ? \str_replace(ROOT_PATH, '.', $trace) : $trace;
     }
 
-    /**
-     * @param array<int, class-string<Throwable>> $exceptionsTypesFor404
-     */
+    /** @param array<int, class-string<Throwable>> $exceptionsTypesFor404 */
     public function set404ExceptionTypes(array $exceptionsTypesFor404): void
     {
         $this->exceptionsTypesFor404 = $exceptionsTypesFor404;
     }
 
-    /**
-     * @return array<int, class-string<Throwable>>
-     */
+    /** @return array<int, class-string<Throwable>> */
     public function get404ExceptionTypes(): array
     {
         return $this->exceptionsTypesFor404;

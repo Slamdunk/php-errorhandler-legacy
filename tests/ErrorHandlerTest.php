@@ -18,9 +18,7 @@ final class ErrorHandlerTest extends TestCase
     private string $errorLog;
     private ErrorException $exception;
 
-    /**
-     * @var array<int, array<string, string>>
-     */
+    /** @var array<int, array<string, string>> */
     private array $emailsSent = [];
     private ErrorHandler $errorHandler;
 
@@ -52,8 +50,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testDefaultConfiguration(): void
     {
-        $errorHandler = new ErrorHandler(function (): void {
-        });
+        $errorHandler = new ErrorHandler(function (): void {});
 
         self::assertTrue($errorHandler->isCli());
         self::assertTrue($errorHandler->autoExit());
@@ -262,15 +259,13 @@ final class ErrorHandlerTest extends TestCase
         $width = \mt_rand(1000, 9000);
         \putenv(\sprintf('COLUMNS=%s', $width));
 
-        $errorHandler = new ErrorHandler(function (): void {
-        });
+        $errorHandler = new ErrorHandler(function (): void {});
 
         self::assertSame($width, $errorHandler->getTerminalWidth());
 
         \putenv('COLUMNS');
 
-        $errorHandler = new ErrorHandler(function (): void {
-        });
+        $errorHandler = new ErrorHandler(function (): void {});
 
         $terminal = new Terminal();
         self::assertSame($terminal->getWidth(), $errorHandler->getTerminalWidth());
