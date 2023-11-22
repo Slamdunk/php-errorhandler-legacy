@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace SlamTest\ErrorHandler;
 
 use ErrorException;
-use PHPUnit\Framework\Attributes\PreserveGlobalState;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Slam\ErrorHandler\ErrorHandler;
@@ -74,8 +72,6 @@ final class ErrorHandlerTest extends TestCase
         self::assertSame($memoryStream, $errorHandler->getErrorOutputStream());
     }
 
-    #[RunInSeparateProcess]
-    #[PreserveGlobalState(false)]
     public function testRegisterBuiltinHandlers(): void
     {
         $this->errorHandler->register();
@@ -87,8 +83,6 @@ final class ErrorHandlerTest extends TestCase
         $arrayPerVerificaErrori['undefined_index'];
     }
 
-    #[RunInSeparateProcess]
-    #[PreserveGlobalState(false)]
     public function testScream(): void
     {
         $scream = [
