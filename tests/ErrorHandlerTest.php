@@ -16,7 +16,7 @@ final class ErrorHandlerTest extends TestCase
     private string $errorLog;
     private ErrorException $exception;
 
-    /** @var array<int, array<string, string>> */
+    /** @var list<array{subject: string, body: string}> */
     private array $emailsSent = [];
     private ErrorHandler $errorHandler;
 
@@ -186,9 +186,7 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->emailException($this->exception);
 
         self::assertNotEmpty($this->emailsSent);
-        $message = \current($this->emailsSent);
-        self::assertNotFalse($message);
-
+        $message     = \current($this->emailsSent);
         $messageText = $message['body'];
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
         self::assertStringContainsString($_SESSION[$key], $messageText);
