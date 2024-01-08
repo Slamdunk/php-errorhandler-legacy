@@ -74,6 +74,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testRegisterBuiltinHandlers(): void
     {
+        \error_reporting(\E_ALL);
         $this->errorHandler->register();
         $arrayPerVerificaErrori = [];
 
@@ -93,6 +94,7 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setScreamSilencedErrors($scream);
         self::assertSame($scream, $this->errorHandler->getScreamSilencedErrors());
 
+        \error_reporting(\E_ALL);
         $this->errorHandler->register();
 
         @ \trigger_error(\uniqid('deprecated_'), \E_USER_DEPRECATED);

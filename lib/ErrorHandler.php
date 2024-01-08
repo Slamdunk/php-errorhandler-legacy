@@ -6,6 +6,7 @@ namespace Slam\ErrorHandler;
 
 use Doctrine\Common\Util\Debug as DoctrineDebug;
 use ErrorException;
+use PHPUnit\Framework\Test;
 use Throwable;
 
 final class ErrorHandler
@@ -151,7 +152,7 @@ final class ErrorHandler
     public function logErrors(): bool
     {
         if (null === $this->logErrors) {
-            $this->setLogErrors(! \interface_exists(\PHPUnit\Framework\Test::class));
+            $this->setLogErrors(! \interface_exists(Test::class));
             \assert(null !== $this->logErrors);
         }
 
