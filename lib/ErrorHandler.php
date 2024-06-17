@@ -49,7 +49,7 @@ final class ErrorHandler
     private $emailCallback;
 
     /** @var callable */
-    private $errorLogCallback = '\\error_log';
+    private $errorLogCallback = '\error_log';
 
     /** @var array<int, bool> */
     private array $scream = [];

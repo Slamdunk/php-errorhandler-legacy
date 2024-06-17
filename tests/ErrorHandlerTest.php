@@ -303,7 +303,7 @@ final class ErrorHandlerTest extends TestCase
     public function testCanSetCustomErrorLogCallback(): void
     {
         $this->errorHandler->setLogErrors(true);
-        self::assertSame('\\error_log', $this->errorHandler->getErrorLogCallback());
+        self::assertSame('\error_log', $this->errorHandler->getErrorLogCallback());
 
         $data           = [];
         $customCallback = static function (string $text) use (& $data): void {
