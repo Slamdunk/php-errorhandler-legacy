@@ -1,22 +1,62 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Expression \"\\$arrayPerVerificaErrori\\['undefined_index'\\]\" on a separate line does not do anything\\.$#"
+			message: '#^Parameter \#1 \$search of function str_replace expects array\<string\>\|string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/ErrorHandler.php
+
+		-
+			message: '#^Parameter \#2 \$array of function implode expects array\<string\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/ErrorHandler.php
+
+		-
+			message: '#^Parameter \#2 \$array of function implode expects array\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/ErrorHandler.php
+
+		-
+			message: '#^Parameter \#3 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/ErrorHandler.php
+
+		-
+			message: '#^Expression "\$arrayPerVerificaErrori\[''undefined_index''\]" on a separate line does not do anything\.$#'
+			identifier: expr.resultUnused
 			count: 1
 			path: tests/ErrorHandlerTest.php
 
 		-
-			message: "#^Expression \"@\\$arrayPerVerificaErrori\\['no_exception_thrown_on_undefined_index_now'\\]\" on a separate line does not do anything\\.$#"
+			message: '#^Expression "@\$arrayPerVerificaErrori\[''no_exception_thrown_on_undefined_index_now''\]" on a separate line does not do anything\.$#'
+			identifier: expr.resultUnused
 			count: 1
 			path: tests/ErrorHandlerTest.php
 
 		-
-			message: "#^Offset 'no_exception_thrown…' does not exist on array\\{\\}\\.$#"
+			message: '#^Offset ''no_exception_thrown_on_undefined_index_now'' does not exist on array\{\}\.$#'
+			identifier: offsetAccess.notFound
 			count: 1
 			path: tests/ErrorHandlerTest.php
 
 		-
-			message: "#^Offset 'undefined_index' does not exist on array\\{\\}\\.$#"
+			message: '#^Offset ''undefined_index'' does not exist on array\{\}\.$#'
+			identifier: offsetAccess.notFound
 			count: 1
+			path: tests/ErrorHandlerTest.php
+
+		-
+			message: '#^Parameter \#1 \$needle of static method PHPUnit\\Framework\\Assert\:\:assertStringContainsString\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/ErrorHandlerTest.php
+
+		-
+			message: '#^Parameter \#1 \$needle of static method PHPUnit\\Framework\\Assert\:\:assertStringNotContainsString\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
 			path: tests/ErrorHandlerTest.php
 

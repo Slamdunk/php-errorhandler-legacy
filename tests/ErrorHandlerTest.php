@@ -19,6 +19,7 @@ final class ErrorHandlerTest extends TestCase
     /** @var list<array{subject: string, body: string}> */
     private array $emailsSent = [];
     private ErrorHandler $errorHandler;
+    private bool $unregister = false;
 
     protected function setUp(): void
     {
@@ -44,6 +45,10 @@ final class ErrorHandlerTest extends TestCase
         \putenv('COLUMNS');
         \ini_set('error_log', $this->backupErrorLog);
         @\unlink($this->errorLog);
+        if ($this->unregister) {
+            \restore_exception_handler();
+            \restore_error_handler();
+        }
     }
 
     public function testDefaultConfiguration(): void
@@ -76,6 +81,7 @@ final class ErrorHandlerTest extends TestCase
     {
         \error_reporting(\E_ALL);
         $this->errorHandler->register();
+        $this->unregister       = true;
         $arrayPerVerificaErrori = [];
 
         @ $arrayPerVerificaErrori['no_exception_thrown_on_undefined_index_now'];
@@ -96,6 +102,7 @@ final class ErrorHandlerTest extends TestCase
 
         \error_reporting(\E_ALL);
         $this->errorHandler->register();
+        $this->unregister = true;
 
         @ \trigger_error(\uniqid('deprecated_'), \E_USER_DEPRECATED);
 

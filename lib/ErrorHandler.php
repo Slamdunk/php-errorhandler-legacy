@@ -246,8 +246,8 @@ final class ErrorHandler
 
                 $this->outputError(\PHP_EOL);
                 $this->outputError(\sprintf('<error> %s </error>', \str_repeat(' ', $width)));
-                foreach ($lines as $line) {
-                    $this->outputError(\sprintf('<error> %s%s </error>', $line, \str_repeat(' ', \max(0, $width - \strlen($line)))));
+                foreach ($lines as $line2) {
+                    $this->outputError(\sprintf('<error> %s%s </error>', $line2, \str_repeat(' ', \max(0, $width - \strlen($line2)))));
                 }
                 $this->outputError(\sprintf('<error> %s </error>', \str_repeat(' ', $width)));
                 $this->outputError(\PHP_EOL);
