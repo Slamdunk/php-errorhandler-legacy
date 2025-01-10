@@ -1,7 +1,7 @@
 ifdef CI
 	DOCKER_PHP_EXEC :=
 else
-	DOCKER_PHP_EXEC := docker compose run --rm php
+	DOCKER_PHP_EXEC := docker compose run --rm --env PHP_CS_FIXER_IGNORE_ENV=1 php
 endif
 
 all: csfix static-analysis test
