@@ -7,12 +7,6 @@ parameters:
 			path: lib/ErrorHandler.php
 
 		-
-			message: '#^Parameter \#2 \$array of function implode expects array\<string\>, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/ErrorHandler.php
-
-		-
 			message: '#^Parameter \#2 \$array of function implode expects array\|null, mixed given\.$#'
 			identifier: argument.type
 			count: 1
