@@ -42,15 +42,3 @@ parameters:
 			count: 1
 			path: tests/ErrorHandlerTest.php
 
-		-
-			message: '#^Parameter \#1 \$needle of static method PHPUnit\\Framework\\Assert\:\:assertStringContainsString\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: tests/ErrorHandlerTest.php
-
-		-
-			message: '#^Parameter \#1 \$needle of static method PHPUnit\\Framework\\Assert\:\:assertStringNotContainsString\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: tests/ErrorHandlerTest.php
-
