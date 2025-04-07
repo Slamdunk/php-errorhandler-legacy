@@ -42,3 +42,15 @@ parameters:
 			count: 1
 			path: tests/ErrorHandlerTest.php
 
+		-
+			message: '#^Parameter \#1 \$filename of function file_get_contents expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 4
+			path: tests/ErrorHandlerTest.php
+
+		-
+			message: '#^Parameter \#1 \$filename of function filesize expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/ErrorHandlerTest.php
+
