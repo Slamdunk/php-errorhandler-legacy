@@ -12,8 +12,6 @@ use Symfony\Component\Console\Terminal;
 
 final class ErrorHandlerTest extends TestCase
 {
-    private string $backupErrorLog;
-    private string $errorLog;
     private ErrorException $exception;
 
     /** @var list<array{subject: string, body: string}> */
@@ -23,11 +21,6 @@ final class ErrorHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->backupErrorLog = (string) \ini_get('error_log');
-        $this->errorLog       = __DIR__ . \DIRECTORY_SEPARATOR . 'error_log_test';
-        \touch($this->errorLog);
-        \ini_set('error_log', $this->errorLog);
-
         $this->exception        = new ErrorException(\uniqid('normal_'), \E_USER_NOTICE);
         $this->errorHandler     = new ErrorHandler(function (string $subject, string $body): void {
             $this->emailsSent[] = [
@@ -43,8 +36,6 @@ final class ErrorHandlerTest extends TestCase
     protected function tearDown(): void
     {
         \putenv('COLUMNS');
-        \ini_set('error_log', $this->backupErrorLog);
-        @\unlink($this->errorLog);
         if ($this->unregister) {
             \restore_exception_handler();
             \restore_error_handler();
@@ -138,7 +129,8 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertStringContainsString($this->exception->getMessage(), $output);
 
-        $errorLogContent = (string) \file_get_contents($this->errorLog);
+        self::expectErrorLog();
+        $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
 
@@ -154,7 +146,8 @@ final class ErrorHandlerTest extends TestCase
 
         self::assertStringNotContainsString($this->exception->getMessage(), $output);
 
-        $errorLogContent = (string) \file_get_contents($this->errorLog);
+        self::expectErrorLog();
+        $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
 
@@ -164,7 +157,7 @@ final class ErrorHandlerTest extends TestCase
 
         $this->errorHandler->logException($this->exception);
 
-        self::assertSame(0, \filesize($this->errorLog));
+        self::assertSame(0, \filesize(\ini_get('error_log')));
 
         $this->errorHandler->setLogErrors(true);
 
@@ -172,7 +165,8 @@ final class ErrorHandlerTest extends TestCase
 
         $this->errorHandler->logException($exception);
 
-        $errorLogContent = (string) \file_get_contents($this->errorLog);
+        self::expectErrorLog();
+        $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
 
         self::assertStringContainsString($exception->getMessage(), $errorLogContent);
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
@@ -236,7 +230,8 @@ final class ErrorHandlerTest extends TestCase
 
         $errorHandler->emailException($this->exception);
 
-        $errorLogContent = (string) \file_get_contents($this->errorLog);
+        self::expectErrorLog();
+        $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringNotContainsString($this->exception->getMessage(), $errorLogContent);
         self::assertStringContainsString($mailError, $errorLogContent);
     }
@@ -323,7 +318,7 @@ final class ErrorHandlerTest extends TestCase
 
         $this->errorHandler->logException($this->exception);
 
-        self::assertSame(0, \filesize($this->errorLog));
+        self::assertSame(0, \filesize(\ini_get('error_log')));
         self::assertStringContainsString($this->exception->getMessage(), \var_export($data, true));
     }
 }
