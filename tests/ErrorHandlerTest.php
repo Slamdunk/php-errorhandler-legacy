@@ -113,7 +113,7 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->exceptionHandler($this->exception);
 
         \fseek($memoryStream, 0);
-        $output = (string) \stream_get_contents($memoryStream);
+        $output = \stream_get_contents($memoryStream);
         self::assertStringContainsString($this->exception->getMessage(), $output);
     }
 
