@@ -19,7 +19,7 @@
         "phpstan/phpstan-strict-rules": "^2.0.7",
         "phpunit/phpunit": "^12.4.4",
         "slam/php-cs-fixer-extensions": "^3.14.0",
-        "symfony/console": "^7.3.6"
+        "symfony/console": "^7.4.0"
     },
     "autoload": {
         "psr-4": {
