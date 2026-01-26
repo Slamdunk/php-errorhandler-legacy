@@ -22,7 +22,7 @@ csfix: vendor
 
 .PHONY: static-analysis
 static-analysis: vendor
-	$(DOCKER_PHP_EXEC) php -d zend.assertions=1 vendor/bin/phpstan analyse $(PHPSTAN_ARGS)
+	$(DOCKER_PHP_EXEC) php -d zend.assertions=1 vendor/bin/phpstan analyse --memory-limit=512M $(PHPSTAN_ARGS)
 
 .PHONY: test
 test: vendor

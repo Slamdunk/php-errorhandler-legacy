@@ -54,7 +54,7 @@ final class ErrorHandlerTest extends TestCase
 
         $errorHandler->setCli(false);
         $errorHandler->setAutoExit(false);
-        $errorHandler->setTerminalWidth($width            = \mt_rand(1, 999));
+        $errorHandler->setTerminalWidth($width            = \random_int(1, 999));
         $errorHandler->setErrorOutputStream($memoryStream = \fopen('php://memory', 'r+'));
         $errorHandler->setLogErrors(true);
 
@@ -252,7 +252,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testTerminalWidthByEnv(): void
     {
-        $width = \mt_rand(1000, 9000);
+        $width = \random_int(1000, 9000);
         \putenv(\sprintf('COLUMNS=%s', $width));
 
         $errorHandler = new ErrorHandler(function (): void {});
