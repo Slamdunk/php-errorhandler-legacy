@@ -189,8 +189,10 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->emailException($this->exception);
 
         self::assertNotEmpty($this->emailsSent);
-        $message     = \current($this->emailsSent);
+        $message     = $this->emailsSent[0];
+        self::assertIsArray($message);
         $messageText = $message['body'];
+        self::assertIsString($messageText);
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
         self::assertStringContainsString($_SESSION[$key], $messageText);
         self::assertStringContainsString($_POST[$key], $messageText);

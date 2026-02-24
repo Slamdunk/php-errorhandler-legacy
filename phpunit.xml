@@ -4,8 +4,9 @@
         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
         colors="true"
         cacheDirectory=".phpunit.cache"
-        displayDetailsOnPhpunitDeprecations="true"
-        displayDetailsOnTestsThatTriggerDeprecations="true"
+        failOnAllIssues="true"
+        displayDetailsOnAllIssues="true"
+        beStrictAboutChangesToGlobalState="true"
 >
   <coverage>
     <report>
