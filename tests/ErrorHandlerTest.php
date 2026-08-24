@@ -123,13 +123,12 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setCli(false);
         $this->errorHandler->setLogErrors(true);
 
+        self::expectErrorLog();
         \ob_start();
         $this->errorHandler->exceptionHandler($this->exception);
         $output = (string) \ob_get_clean();
 
         self::assertStringContainsString($this->exception->getMessage(), $output);
-
-        self::expectErrorLog();
         $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
@@ -140,13 +139,13 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setCli(false);
         $this->errorHandler->setLogErrors(true);
 
+        self::expectErrorLog();
         \ob_start();
         $this->errorHandler->exceptionHandler($this->exception);
         $output = (string) \ob_get_clean();
 
         self::assertStringNotContainsString($this->exception->getMessage(), $output);
 
-        self::expectErrorLog();
         $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
     }
@@ -154,19 +153,18 @@ final class ErrorHandlerTest extends TestCase
     public function testLogErrorAndException(): void
     {
         $this->errorHandler->setLogErrors(false);
-
         $this->errorHandler->logException($this->exception);
 
-        self::assertSame(0, \filesize(\ini_get('error_log')));
+        $errorLogContent = '';
+        $this->errorHandler->setErrorLogCallback(static function (string $message) use (& $errorLogContent): void {
+            $errorLogContent .= $message;
+        });
 
         $this->errorHandler->setLogErrors(true);
 
         $exception = new ErrorException(\uniqid(), \E_USER_ERROR, \E_ERROR, __FILE__, 1, $this->exception);
 
         $this->errorHandler->logException($exception);
-
-        self::expectErrorLog();
-        $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
 
         self::assertStringContainsString($exception->getMessage(), $errorLogContent);
         self::assertStringContainsString($this->exception->getMessage(), $errorLogContent);
@@ -183,8 +181,8 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setLogErrors(true);
 
         $key      = \uniqid(__FUNCTION__);
-        $_SESSION = [$key => \uniqid()];
-        $_POST    = [$key => \uniqid()];
+        $_SESSION = [$key => $sessionValue = \uniqid('session_')];
+        $_POST    = [$key => $postValue = \uniqid('post_')];
 
         $this->errorHandler->emailException($this->exception);
 
@@ -194,8 +192,9 @@ final class ErrorHandlerTest extends TestCase
         $messageText = $message['body'];
         self::assertIsString($messageText);
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
-        self::assertStringContainsString($_SESSION[$key], $messageText);
-        self::assertStringContainsString($_POST[$key], $messageText);
+        self::assertStringContainsString($key, $messageText);
+        self::assertStringContainsString($sessionValue, $messageText);
+        self::assertStringContainsString($postValue, $messageText);
     }
 
     public function testCanHideVariablesFromEmail(): void
@@ -207,8 +206,8 @@ final class ErrorHandlerTest extends TestCase
         $this->errorHandler->setLogErrors(true);
 
         $key      = \uniqid(__FUNCTION__);
-        $_SESSION = [$key => \uniqid()];
-        $_POST    = [$key => \uniqid()];
+        $_SESSION = [$key => $sessionValue = \uniqid('session_')];
+        $_POST    = [$key => $postValue = \uniqid('post_')];
 
         $this->errorHandler->emailException($this->exception);
 
@@ -217,8 +216,9 @@ final class ErrorHandlerTest extends TestCase
 
         $messageText = $message['body'];
         self::assertStringContainsString($this->exception->getMessage(), $messageText);
-        self::assertStringNotContainsString($_SESSION[$key], $messageText);
-        self::assertStringNotContainsString($_POST[$key], $messageText);
+        self::assertStringNotContainsString($key, $messageText);
+        self::assertStringNotContainsString($sessionValue, $messageText);
+        self::assertStringNotContainsString($postValue, $messageText);
     }
 
     public function testErroriNellInvioDellaMailVengonoComunqueLoggati(): void
@@ -230,9 +230,9 @@ final class ErrorHandlerTest extends TestCase
         $errorHandler = new ErrorHandler($mailCallback);
         $errorHandler->setLogErrors(true);
 
+        self::expectErrorLog();
         $errorHandler->emailException($this->exception);
 
-        self::expectErrorLog();
         $errorLogContent = (string) \file_get_contents(\ini_get('error_log'));
         self::assertStringNotContainsString($this->exception->getMessage(), $errorLogContent);
         self::assertStringContainsString($mailError, $errorLogContent);
@@ -320,7 +320,7 @@ final class ErrorHandlerTest extends TestCase
 
         $this->errorHandler->logException($this->exception);
 
-        self::assertSame(0, \filesize(\ini_get('error_log')));
+        self::assertFileDoesNotExist((string) \ini_get('error_log'));
         self::assertStringContainsString($this->exception->getMessage(), \var_export($data, true));
     }
 }
